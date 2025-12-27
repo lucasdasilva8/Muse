@@ -20,11 +20,12 @@ author: Lucas Da Silva
 ###############################################
 
 navbar-links:
+  What we provide: "whatweprovide"
   About Muse: "aboutme"
   Resources:
     - Nelson Center for Entrepreneurship: "https://entrepreneurship.brown.edu/"
   Brown University: "https://brown.edu"
-  What we provide: "whatweprovide"
+ 
   
 ################
 # --- Logo --- #
