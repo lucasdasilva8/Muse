@@ -3,3 +3,6 @@
 .vscode/
 *.log
 node_modules/
+product/node_modules/
+product/.next/
+product/out/

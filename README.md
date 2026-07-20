@@ -51,6 +51,16 @@ Open http://localhost:8080
 
 Forms open a mailto to `muse.waitlist@example.com`. Change that address in `assets/js/main.js` to your real inbox (or swap in Formspree / Google Forms later).
 
-## Status
+## Product backbone (Next.js)
 
-Early access marketing site only. No live invest flow. Not an offer to sell securities.
+Working investment + listing app in [`product/`](product/):
+
+```bash
+cd product && npm install && npm run dev
+```
+
+- Artist: http://localhost:3000/artist/apply  
+- Fan browse/invest: http://localhost:3000/browse  
+- Docs: [docs/BACKBONE.md](docs/BACKBONE.md)
+
+Static marketing + clickable HTML prototype remain on GitHub Pages.
