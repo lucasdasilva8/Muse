@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How it works — Muse</title>
+  <meta name="description" content="How Muse revenue shares work for artists, fans, and Muse ops — including the pricing structure." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <nav class="site-nav" aria-label="Primary">
+    <div class="container">
+      <a class="logo" href="index.html">MUSE</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="how-it-works.html" aria-current="page">How it works</a></li>
+        <li><a href="for-artists.html">Artists</a></li>
+        <li><a href="for-fans.html">Fans</a></li>
+        <li><a href="trust.html">Trust</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a class="nav-cta" href="index.html#waitlist">Join waitlist</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Process</p>
+      <h1>How Muse works</h1>
+      <p>Three sides of the same offer: the artist sets terms, Muse verifies and structures pricing, fans fund and get paid from defined revenue.</p>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="container split">
+      <div>
+        <p class="eyebrow">For artists</p>
+        <h2>From application to payouts</h2>
+        <div class="process">
+          <div class="process-step">
+            <div class="process-num">01</div>
+            <div>
+              <h3>Apply &amp; verify identity</h3>
+              <p>Stage name, links, raise purpose. Muse confirms who controls the listing.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="process-num">02</div>
+            <div>
+              <h3>Traction + financials</h3>
+              <p>Monthly listeners and growth, plus disclosed revenue backed by documents.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="process-num">03</div>
+            <div>
+              <h3>Set offer terms</h3>
+              <p>Choose raise (R), share % (S), term (T), and optional cap (C). You control how much you’re offering.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="process-num">04</div>
+            <div>
+              <h3>Listing, raise, report, pay</h3>
+              <p>After approval, fans fund the raise. You report defined net on schedule; Muse routes the fan pool’s share.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow">For fans</p>
+        <h2>What you buy into</h2>
+        <div class="process">
+          <div class="process-step">
+            <div class="process-num">01</div>
+            <div>
+              <h3>Read the listing</h3>
+              <p>Terms, verification level, included income categories, fees, and risk — before you pay.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="process-num">02</div>
+            <div>
+              <h3>Invest an amount</h3>
+              <p>Your fraction of the fan pool is what you invest divided by the total raise.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="process-num">03</div>
+            <div>
+              <h3>Receive payouts</h3>
+              <p>Each period, the pool gets S × defined net. You get your fraction of that pool, until the term or cap ends.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-elevated">
+    <div class="container">
+      <p class="eyebrow">Pricing structure</p>
+      <h2>Simple math, no black box</h2>
+      <p class="section-lead">Muse suggests a coherent raise from disclosed revenue, verification quality, traction, and the terms the artist chooses.</p>
+
+      <table class="terms-table">
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>R</th>
+            <td>Raise amount — capital the artist wants to raise</td>
+          </tr>
+          <tr>
+            <th>S</th>
+            <td>Revenue share — portion of defined net sold to the fan pool</td>
+          </tr>
+          <tr>
+            <th>T</th>
+            <td>Term length in months</td>
+          </tr>
+          <tr>
+            <th>C</th>
+            <td>Optional return cap (e.g. 1.5× total invested)</td>
+          </tr>
+          <tr>
+            <th>V_ann</th>
+            <td>Estimated annual defined net from disclosure + docs</td>
+          </tr>
+          <tr>
+            <th>Q</th>
+            <td>Revenue quality — higher when documents verify the numbers</td>
+          </tr>
+          <tr>
+            <th>G</th>
+            <td>Traction factor — listeners, growth, release activity (bounded)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="formula">V_adj = V_ann × Q × G</div>
+      <div class="formula">R_suggested = (S × V_adj × T/12) / C</div>
+      <div class="formula">V_implied = R / S</div>
+      <div class="formula">fan_fraction = amount_invested / R</div>
+      <div class="formula">period_payout = fan_fraction × (S × defined_net_period)</div>
+
+      <p class="section-lead" style="margin-top: 1rem">Payouts stop when the term ends or when the fan pool has received C × R (if a cap is set).</p>
+      <div class="risk-callout">This is a planning framework, not a promise of returns. Music revenue is uncertain. You can lose money. Live investing requires legal review.</div>
+      <a class="btn btn-outline" href="for-artists.html">Artist path</a>
+      <a class="btn btn-ink" href="for-fans.html" style="margin-left: 0.5rem">Fan path</a>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">MUSE</div>
+          <p>Revenue shares for artists and the fans who believe in them.</p>
+        </div>
+        <ul class="footer-links">
+          <li><a href="how-it-works.html">How it works</a></li>
+          <li><a href="for-artists.html">Artists</a></li>
+          <li><a href="for-fans.html">Fans</a></li>
+          <li><a href="trust.html">Trust</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </div>
+      <p class="footer-meta">Muse is not an offer to sell securities. Early access only.</p>
+    </div>
+  </footer>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

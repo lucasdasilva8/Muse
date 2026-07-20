@@ -1,607 +1,190 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Muse - Invest in Musicians</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* ============================================
-           EASY EDITING SECTION - CUSTOMIZE HERE
-           ============================================ */
-        
-        :root {
-            /* COLORS - Change these to match your brand */
-            --primary-color: #7c3aed;      /* Purple */
-            --secondary-color: #ec4899;    /* Pink */
-            --dark-bg: #0f0f23;           /* Dark background */
-            --card-bg: #1a1a2e;           /* Card background */
-            --text-light: #ffffff;         /* White text */
-            --text-gray: #a0a0b8;         /* Gray text */
-            
-            /* FONTS */
-            --main-font: 'Poppins', sans-serif;
-        }
-        
-        /* ============================================
-           BASE STYLES - Don't change unless needed
-           ============================================ */
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: var(--main-font);
-            background: linear-gradient(135deg, var(--dark-bg) 0%, #1a0b2e 100%);
-            color: var(--text-light);
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        /* Navigation */
-        nav {
-            background: rgba(26, 26, 46, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 20px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .nav-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-light);
-            text-decoration: none;
-        }
-        
-        .logo img {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 30px;
-            list-style: none;
-        }
-        
-        .nav-links a {
-            color: var(--text-light);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        .nav-links a:hover {
-            color: var(--primary-color);
-        }
-        
-        .cta-button {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 12px 28px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: transform 0.3s;
-            display: inline-block;
-        }
-        
-        .cta-button:hover {
-            transform: scale(1.05);
-        }
-        
-        /* Hero Section */
-        .hero {
-            padding: 100px 0;
-            text-align: center;
-        }
-        
-        .hero h1 {
-            font-size: 56px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            line-height: 1.2;
-        }
-        
-        .gradient-text {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .hero p {
-            font-size: 20px;
-            color: var(--text-gray);
-            margin-bottom: 40px;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .hero-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .secondary-button {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 12px 28px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: background 0.3s;
-            display: inline-block;
-        }
-        
-        .secondary-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        /* Stats Section */
-        .stats {
-            padding: 60px 0;
-            background: rgba(26, 26, 46, 0.5);
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 40px;
-            text-align: center;
-        }
-        
-        .stat-item h3 {
-            font-size: 48px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-        }
-        
-        .stat-item p {
-            color: var(--text-gray);
-            font-size: 16px;
-        }
-        
-        /* Features Section */
-        .features {
-            padding: 100px 0;
-        }
-        
-        .section-title {
-            text-align: center;
-            font-size: 42px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-        
-        .section-subtitle {
-            text-align: center;
-            color: var(--text-gray);
-            font-size: 18px;
-            margin-bottom: 60px;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
-        }
-        
-        .feature-card {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(124, 58, 237, 0.3);
-        }
-        
-        .feature-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-        
-        .feature-card h3 {
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-        
-        .feature-card p {
-            color: var(--text-gray);
-            line-height: 1.8;
-        }
-        
-        /* How It Works */
-        .how-it-works {
-            padding: 100px 0;
-            background: rgba(26, 26, 46, 0.3);
-        }
-        
-        .steps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            margin-top: 60px;
-        }
-        
-        .step {
-            text-align: center;
-        }
-        
-        .step-number {
-            font-size: 72px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 20px;
-        }
-        
-        .step h3 {
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-        
-        .step p {
-            color: var(--text-gray);
-        }
-        
-        /* About Section */
-        .about {
-            padding: 100px 0;
-        }
-        
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            align-items: center;
-        }
-        
-        .about-text h2 {
-            font-size: 42px;
-            margin-bottom: 30px;
-        }
-        
-        .about-text p {
-            color: var(--text-gray);
-            font-size: 18px;
-            margin-bottom: 20px;
-            line-height: 1.8;
-        }
-        
-        .about-image {
-            text-align: center;
-        }
-        
-        .about-image img {
-            max-width: 300px;
-            width: 100%;
-            filter: drop-shadow(0 20px 40px rgba(124, 58, 237, 0.4));
-        }
-        
-        /* CTA Section */
-        .final-cta {
-            padding: 100px 0;
-            text-align: center;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        }
-        
-        .final-cta h2 {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-        
-        .final-cta p {
-            font-size: 20px;
-            margin-bottom: 40px;
-        }
-        
-        /* Footer */
-        footer {
-            background: var(--card-bg);
-            padding: 60px 0 30px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-        
-        .footer-section h4 {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        
-        .footer-section ul {
-            list-style: none;
-        }
-        
-        .footer-section a {
-            color: var(--text-gray);
-            text-decoration: none;
-            display: block;
-            margin-bottom: 10px;
-            transition: color 0.3s;
-        }
-        
-        .footer-section a:hover {
-            color: var(--primary-color);
-        }
-        
-        .footer-bottom {
-            text-align: center;
-            padding-top: 30px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-gray);
-        }
-        
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .hero h1 {
-                font-size: 36px;
-            }
-            
-            .hero p {
-                font-size: 16px;
-            }
-            
-            .about-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .section-title {
-                font-size: 32px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Muse — Invest in artists. Earn when they do.</title>
+  <meta name="description" content="Muse is a revenue-share platform where fans invest in artists with verified traction, clear terms, and structured pricing." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
-    <!-- Navigation -->
-    <nav>
-        <div class="container">
-            <div class="nav-content">
-                <a href="#" class="logo">
-                    <img src="assets/img/Gemini_Generated_Image_8ekpup8ekpup8ekp.png" alt="Muse Logo">
-                    <span>Muse</span>
-                </a>
-                <ul class="nav-links">
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#how-it-works">How It Works</a></li>
-                    <li><a href="#about">About</a></li>
-                </ul>
-                <a href="#" class="cta-button">Get Started</a>
-            </div>
-        </div>
-    </nav>
+  <nav class="site-nav" aria-label="Primary">
+    <div class="container">
+      <a class="logo" href="index.html">MUSE</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="how-it-works.html">How it works</a></li>
+        <li><a href="for-artists.html">Artists</a></li>
+        <li><a href="for-fans.html">Fans</a></li>
+        <li><a href="trust.html">Trust</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a class="nav-cta" href="#waitlist">Join waitlist</a></li>
+      </ul>
+    </div>
+  </nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <h1>
-                Invest in the<br>
-                <span class="gradient-text">Next Generation of Music</span>
-            </h1>
-            <p>
-                Connect directly with talented musicians. Support their journey, 
-                share in their success, and be part of something extraordinary.
-            </p>
-            <div class="hero-buttons">
-                <a href="#" class="cta-button">Start Investing</a>
-                <a href="#" class="secondary-button">I'm a Musician</a>
-            </div>
-        </div>
-    </section>
+  <header class="hero">
+    <div class="hero-atmosphere" aria-hidden="true"></div>
+    <div class="container">
+      <p class="hero-brand">MUSE</p>
+      <h1>Invest in artists. Earn when they do.</h1>
+      <p class="hero-lead">Fans fund artists through clear revenue shares — priced from verified traction and disclosed earnings, not donations.</p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="for-fans.html#waitlist">Join as a fan</a>
+        <a class="btn btn-secondary" href="for-artists.html#waitlist">List your music</a>
+      </div>
+    </div>
+  </header>
 
-    <!-- Stats Section -->
-    <section class="stats">
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <h3>500+</h3>
-                    <p>Artists Funded</p>
-                </div>
-                <div class="stat-item">
-                    <h3>$2M+</h3>
-                    <p>Total Invested</p>
-                </div>
-                <div class="stat-item">
-                    <h3>15K+</h3>
-                    <p>Active Investors</p>
-                </div>
-                <div class="stat-item">
-                    <h3>92%</h3>
-                    <p>Success Rate</p>
-                </div>
-            </div>
-        </div>
-    </section>
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow reveal">The gap</p>
+      <h2 class="reveal">Artists need capital. Fans already spend. Neither side gets a fair structure.</h2>
+      <div class="narrative reveal">
+        <p>Underground and independent artists often need money upfront to keep creating and building momentum. Fans already support them — merch, tickets, streams — but usually with no path to a return.</p>
+        <p>Muse turns that support into investment: artists offer a defined share of future earnings; fans buy in at terms they can read before they pay.</p>
+      </div>
+    </div>
+  </section>
 
-    <!-- Features Section -->
-    <section id="features" class="features">
-        <div class="container">
-            <h2 class="section-title">Why Choose Muse</h2>
-            <p class="section-subtitle">A revolutionary platform built for music lovers</p>
-            
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">📈</div>
-                    <h3>Grow Together</h3>
-                    <p>
-                        Invest in rising talent and earn as they succeed. 
-                        Your support fuels their journey while building your portfolio.
-                    </p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">🎵</div>
-                    <h3>Direct Connection</h3>
-                    <p>
-                        Build meaningful relationships with artists. 
-                        No middlemen, just pure creative partnership and collaboration.
-                    </p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">👥</div>
-                    <h3>Community Driven</h3>
-                    <p>
-                        Join a movement of music lovers and creators 
-                        shaping the future of the industry together.
-                    </p>
-                </div>
-            </div>
+  <section class="section section-elevated">
+    <div class="container">
+      <p class="eyebrow reveal">How a Muse share works</p>
+      <h2 class="reveal">You set the split. We structure the price.</h2>
+      <p class="section-lead reveal">Artists choose how much of defined future earnings to offer, for how long, and at what raise. Muse verifies inputs and maps that into a coherent listing.</p>
+      <div class="process">
+        <div class="process-step">
+          <div class="process-num">01</div>
+          <div>
+            <h3>Artist opens an offer</h3>
+            <p>Raise amount, revenue share %, term, and optional return cap — plus which income categories are included.</p>
+          </div>
         </div>
-    </section>
+        <div class="process-step">
+          <div class="process-num">02</div>
+          <div>
+            <h3>Muse verifies &amp; prices</h3>
+            <p>Traction (like monthly listeners), disclosed revenue, and financial documents inform a suggested raise and risk label.</p>
+          </div>
+        </div>
+        <div class="process-step">
+          <div class="process-num">03</div>
+          <div>
+            <h3>Fans fund the raise</h3>
+            <p>Each fan owns a fraction of the fan pool equal to what they put in versus the total raise.</p>
+          </div>
+        </div>
+        <div class="process-step">
+          <div class="process-num">04</div>
+          <div>
+            <h3>Payouts when revenue hits</h3>
+            <p>Defined net earnings are shared per the terms until the term ends or the cap is reached.</p>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top: 2rem"><a class="btn btn-outline" href="how-it-works.html">See the full process</a></p>
+    </div>
+  </section>
 
-    <!-- How It Works -->
-    <section id="how-it-works" class="how-it-works">
-        <div class="container">
-            <h2 class="section-title">How It Works</h2>
-            <p class="section-subtitle">Three simple steps to start your journey</p>
-            
-            <div class="steps-grid">
-                <div class="step">
-                    <div class="step-number">01</div>
-                    <h3>Discover Artists</h3>
-                    <p>Browse talented musicians at every stage of their career</p>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">02</div>
-                    <h3>Invest Smartly</h3>
-                    <p>Support artists you believe in with transparent terms</p>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">03</div>
-                    <h3>Earn Returns</h3>
-                    <p>Share in their success as they grow and thrive</p>
-                </div>
-            </div>
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow reveal">Trust</p>
+      <h2 class="reveal">Built to make revenue reporting believable.</h2>
+      <div class="trust-grid">
+        <div class="trust-item reveal">
+          <h3>Traction checks</h3>
+          <p>Listener and growth signals are reviewed against public sources before a listing goes live.</p>
         </div>
-    </section>
+        <div class="trust-item reveal">
+          <h3>Document-backed revenue</h3>
+          <p>Artists disclose earnings and back them with distributor statements and financial docs.</p>
+        </div>
+        <div class="trust-item reveal">
+          <h3>Clear terms &amp; fees</h3>
+          <p>Share %, term, cap, included categories, and Muse fees appear on every offer — no tip-jar ambiguity.</p>
+        </div>
+      </div>
+      <p style="margin-top: 2rem"><a class="btn btn-outline" href="trust.html">How verification works</a></p>
+    </div>
+  </section>
 
-    <!-- About Section -->
-    <section id="about" class="about">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2>Our Story</h2>
-                    <p>
-                        Born at Brown University, Muse started with a simple belief: 
-                        talented musicians deserve better funding options, and fans 
-                        deserve to be more than just listeners.
-                    </p>
-                    <p>
-                        We're building a new ecosystem where creators and supporters 
-                        grow together, creating lasting value for everyone involved. 
-                        Join us in revolutionizing how music gets funded.
-                    </p>
-                </div>
-                
-                <div class="about-image">
-                    <img src="assets/img/Gemini_Generated_Image_8ekpup8ekpup8ekp.png" alt="Muse Swan Logo">
-                </div>
-            </div>
-        </div>
-    </section>
+  <section class="section section-dark" id="waitlist">
+    <div class="container">
+      <p class="eyebrow reveal">Early access</p>
+      <h2 class="reveal">Piloting with artists and fans who want a fairer model.</h2>
+      <p class="section-lead reveal">Born at Brown. We’re starting with a small set of artists — no live marketplace yet, no fabricated traction numbers. Join the waitlist if you want in.</p>
+      <div class="cta-band">
+        <form class="waitlist reveal" data-waitlist="fan">
+          <h3>Fan waitlist</h3>
+          <p>Get notified when verified listings open.</p>
+          <div class="field">
+            <label for="fan-name">Name</label>
+            <input id="fan-name" name="name" type="text" autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="fan-email">Email</label>
+            <input id="fan-email" name="email" type="email" required autocomplete="email" />
+          </div>
+          <button class="btn btn-primary" type="submit">Join fan waitlist</button>
+          <p class="form-note">Opens your email app to send us your request. We’ll replace this with a hosted form soon.</p>
+          <div class="form-success" role="status">Thanks — send the email that opened to finish joining.</div>
+        </form>
+        <form class="waitlist reveal" data-waitlist="artist">
+          <h3>Artist waitlist</h3>
+          <p>Apply to raise through a structured Muse offer.</p>
+          <div class="field">
+            <label for="artist-name">Artist / stage name</label>
+            <input id="artist-name" name="name" type="text" autocomplete="organization" />
+          </div>
+          <div class="field">
+            <label for="artist-email">Email</label>
+            <input id="artist-email" name="email" type="email" required autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="artist-note">Links (Spotify, Instagram, etc.)</label>
+            <input id="artist-note" name="note" type="text" placeholder="Optional" />
+          </div>
+          <button class="btn btn-primary" type="submit">Apply as artist</button>
+          <p class="form-note">Opens your email app to send us your request.</p>
+          <div class="form-success" role="status">Thanks — send the email that opened to finish applying.</div>
+        </form>
+      </div>
+    </div>
+  </section>
 
-    <!-- Final CTA -->
-    <section class="final-cta">
-        <div class="container">
-            <h2>Ready to Get Started?</h2>
-            <p>Join thousands of investors and musicians building the future of music together.</p>
-            <div class="hero-buttons">
-                <a href="#" class="cta-button">Become an Investor</a>
-                <a href="#" class="secondary-button">I'm a Musician</a>
-            </div>
-        </div>
-    </section>
+  <section class="section section-tight">
+    <div class="container">
+      <p class="eyebrow">About</p>
+      <h2>Born at Brown University</h2>
+      <div class="narrative">
+        <p>Muse started from a simple belief: talented musicians deserve better funding options, and fans deserve to be more than listeners who only spend.</p>
+        <p><a class="btn btn-outline" href="about.html">Our story</a></p>
+      </div>
+    </div>
+  </section>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>Muse</h4>
-                    <p style="color: var(--text-gray); font-size: 14px;">
-                        Empowering the next generation of musicians through community investment.
-                    </p>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Press</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>Resources</h4>
-                    <ul>
-                        <li><a href="https://entrepreneurship.brown.edu/">Nelson Center</a></li>
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Terms of Service</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>Connect</h4>
-                    <ul>
-                        <li><a href="#">Twitter</a></li>
-                        <li><a href="#">Instagram</a></li>
-                        <li><a href="mailto:lucas_da_silva@gmail.com">Contact</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>© 2026 Muse. A Brown University startup. All rights reserved.</p>
-            </div>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">MUSE</div>
+          <p>Revenue shares for artists and the fans who believe in them.</p>
         </div>
-    </footer>
+        <ul class="footer-links">
+          <li><a href="how-it-works.html">How it works</a></li>
+          <li><a href="for-artists.html">Artists</a></li>
+          <li><a href="for-fans.html">Fans</a></li>
+          <li><a href="trust.html">Trust</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </div>
+      <p class="footer-meta">Muse is not an offer to sell securities. Early access only. Music revenue is uncertain — you can lose money.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
 </body>
 </html>
