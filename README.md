@@ -6,7 +6,7 @@ Fan investment platform for artists — revenue shares with verification and str
 
 ## Site
 
-Static marketing site for GitHub Pages:
+Static marketing + product prototype for GitHub Pages:
 
 | Page | File |
 |------|------|
@@ -16,8 +16,12 @@ Static marketing site for GitHub Pages:
 | Fans | `for-fans.html` |
 | Trust | `trust.html` |
 | About | `about.html` |
+| **Fan browse (prototype)** | `browse.html` |
+| **Sample listing** | `listing-mira-vale.html` |
+| **Invest + email** | `invest.html` |
+| **Artist dashboard** | `app-artist.html` |
 
-Styles: `assets/css/styles.css` · Scripts: `assets/js/main.js`
+Sample artist **Mira Vale** uses illustrative revenue ($28k TTM, $8k raise, 15% share). Invest submits via the same mailto waitlist flow — no real payments.
 
 ## Docs
 

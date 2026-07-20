@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Artist dashboard — Muse prototype</title>
+  <meta name="description" content="Prototype artist view for Mira Vale: offer, raise progress, and sample revenue." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="proto-banner">
+    <strong>Artist prototype</strong> — logged-in view for Mira Vale with sample revenue.
+    <a href="browse.html">Switch to fan browse</a>
+  </div>
+
+  <nav class="site-nav" aria-label="Primary">
+    <div class="container">
+      <a class="logo" href="index.html">MUSE</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="browse.html">Fan browse</a></li>
+        <li><a href="app-artist.html" aria-current="page">Artist app</a></li>
+        <li><a href="how-it-works.html">How it works</a></li>
+        <li><a class="nav-cta" href="for-artists.html#waitlist">Apply</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="app-shell">
+    <aside class="app-side">
+      <p class="side-label">Signed in as</p>
+      <p style="font-family: var(--font-display); font-weight: 650; margin-bottom: 1rem">Mira Vale</p>
+      <a class="is-active" href="app-artist.html">Dashboard</a>
+      <a href="listing-mira-vale.html">Public listing</a>
+      <a href="for-artists.html#waitlist">Email apply / waitlist</a>
+      <a href="browse.html">Fan view</a>
+    </aside>
+
+    <main class="app-main">
+      <div class="container-app">
+        <p class="eyebrow">Artist dashboard</p>
+        <h2 style="max-width: none; margin-bottom: 0.35rem">Your raise is live</h2>
+        <p class="section-lead">Sample cockpit: offer terms, progress, and how Muse would show revenue before a payout cycle.</p>
+
+        <div class="dash-grid">
+          <div class="dash-stat">
+            <div class="label">Raised</div>
+            <div class="value">$3,200</div>
+            <p class="progress-label">of $8,000 · 40%</p>
+            <div class="progress"><span style="width: 40%"></span></div>
+          </div>
+          <div class="dash-stat">
+            <div class="label">Fans in</div>
+            <div class="value">12</div>
+            <p class="progress-label">sample investors</p>
+          </div>
+          <div class="dash-stat">
+            <div class="label">TTM defined net</div>
+            <div class="value">$28k</div>
+            <p class="progress-label">Q 0.90 · G 1.05</p>
+          </div>
+        </div>
+
+        <p class="eyebrow">Your offer</p>
+        <table class="terms-table">
+          <tbody>
+            <tr><th>R · Raise</th><td>$8,000</td></tr>
+            <tr><th>S · Fan share</th><td>15% of streaming net</td></tr>
+            <tr><th>T · Term</th><td>36 months</td></tr>
+            <tr><th>C · Cap</th><td>1.5× ($12,000 max to pool)</td></tr>
+            <tr><th>Status</th><td><span class="badge badge-ok">Approved</span> <span class="badge badge-proto">Sample</span></td></tr>
+          </tbody>
+        </table>
+
+        <p class="eyebrow">Muse pricing check</p>
+        <div class="formula">
+          V_adj = 28000 × 0.90 × 1.05 = 26460<br />
+          R_suggested = (0.15 × 26460 × 3) / 1.5 ≈ 7938 → you listed 8000
+        </div>
+
+        <p class="eyebrow">Recent interest (sample)</p>
+        <table class="simple-table">
+          <thead>
+            <tr><th>Fan</th><th>Amount</th><th>Pool %</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Alex R.</td><td>$250</td><td>3.13%</td><td>Interest emailed</td></tr>
+            <tr><td>Jordan K.</td><td>$100</td><td>1.25%</td><td>Interest emailed</td></tr>
+            <tr><td>Sam T.</td><td>$500</td><td>6.25%</td><td>Interest emailed</td></tr>
+          </tbody>
+        </table>
+
+        <p class="eyebrow">Next payout preview</p>
+        <div class="narrative" style="max-width: 48ch; margin-bottom: 1.5rem">
+          <p>If this month’s defined streaming net were <strong>$2,400</strong> (sample), the fan pool would receive 15% = <strong>$360</strong>, split by each fan’s fraction of the $8,000 raise.</p>
+        </div>
+
+        <div class="btn-row">
+          <a class="btn btn-ink" href="listing-mira-vale.html">Preview public page</a>
+          <a class="btn btn-outline" href="for-artists.html#waitlist">Apply via email</a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Browse — Muse prototype</title>
+  <meta name="description" content="Prototype marketplace: browse sample Muse artist listings." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="proto-banner">
+    <strong>Prototype</strong> — sample data only. Not a live offer.
+    <a href="app-artist.html">View artist dashboard</a>
+  </div>
+
+  <nav class="site-nav" aria-label="Primary">
+    <div class="container">
+      <a class="logo" href="index.html">MUSE</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="browse.html" aria-current="page">Browse</a></li>
+        <li><a href="how-it-works.html">How it works</a></li>
+        <li><a href="app-artist.html">Artist app</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a class="nav-cta" href="index.html#waitlist">Join waitlist</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="app-shell">
+    <aside class="app-side">
+      <p class="side-label">Fan view</p>
+      <a class="is-active" href="browse.html">Browse artists</a>
+      <a href="listing-mira-vale.html">Mira Vale</a>
+      <a href="invest.html">Invest flow</a>
+      <a href="index.html#waitlist">Email waitlist</a>
+      <p class="side-label" style="margin-top: 1.5rem">Artist view</p>
+      <a href="app-artist.html">Artist dashboard</a>
+    </aside>
+
+    <main class="app-main">
+      <div class="container-app">
+        <p class="eyebrow">Marketplace</p>
+        <h2 style="max-width: none; margin-bottom: 0.5rem">Browse artists</h2>
+        <p class="section-lead">One curated sample listing so you can click through the fan experience end to end.</p>
+
+        <a class="listing-card" href="listing-mira-vale.html">
+          <div class="listing-avatar" aria-hidden="true">MV</div>
+          <div>
+            <h2>Mira Vale</h2>
+            <p class="listing-meta">Alt-R&amp;B · Providence, RI · <span class="badge badge-ok">Document-backed</span> <span class="badge badge-proto">Sample</span></p>
+            <div class="listing-stats">
+              <span><strong>52.4k</strong> monthly listeners</span>
+              <span><strong>$8,000</strong> raise</span>
+              <span><strong>15%</strong> of streaming net</span>
+            </div>
+            <div class="progress" aria-hidden="true"><span style="width: 40%"></span></div>
+            <p class="progress-label">$3,200 of $8,000 raised</p>
+          </div>
+          <span class="btn btn-ink">View offer</span>
+        </a>
+
+        <p style="margin-top: 2rem; color: var(--muted); font-size: 0.92rem">More artists will appear here after pilots. This entry uses illustrative revenue for product demos only.</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

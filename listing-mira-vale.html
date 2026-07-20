@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mira Vale — Muse prototype listing</title>
+  <meta name="description" content="Sample Muse listing for Mira Vale with illustrative revenue and offer terms." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="proto-banner">
+    <strong>Prototype listing</strong> — all revenue figures are fake / illustrative.
+    <a href="app-artist.html">See this offer as the artist</a>
+  </div>
+
+  <nav class="site-nav" aria-label="Primary">
+    <div class="container">
+      <a class="logo" href="index.html">MUSE</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="browse.html">Browse</a></li>
+        <li><a href="how-it-works.html">How it works</a></li>
+        <li><a href="app-artist.html">Artist app</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a class="nav-cta" href="invest.html">Invest</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="section" style="padding-top: 2.5rem">
+    <div class="container listing-layout">
+      <div>
+        <div class="artist-hero-block">
+          <div class="listing-avatar" aria-hidden="true">MV</div>
+          <div>
+            <p class="eyebrow">Live offer · sample</p>
+            <h2 style="max-width: none; margin-bottom: 0.35rem">Mira Vale</h2>
+            <p class="listing-meta">Alt-R&amp;B · Providence, RI</p>
+            <p>
+              <span class="badge badge-ok">Document-backed</span>
+              <span class="badge badge-warn">Speculative</span>
+              <span class="badge badge-proto">Fake data</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="narrative" style="max-width: 52ch; margin-bottom: 1.5rem">
+          <p>Mira is raising for a full EP cycle — recording, mixing, and a Northeast release push. Fans who invest receive a share of her defined streaming net for 36 months, capped at 1.5×.</p>
+        </div>
+
+        <div class="metric-row">
+          <div class="metric">
+            <div class="label">Monthly listeners</div>
+            <div class="value">52,400</div>
+          </div>
+          <div class="metric">
+            <div class="label">6-mo growth</div>
+            <div class="value">+18%</div>
+          </div>
+          <div class="metric">
+            <div class="label">TTM defined net</div>
+            <div class="value">$28,000</div>
+          </div>
+        </div>
+
+        <p class="eyebrow">Pricing inputs (illustrative)</p>
+        <table class="terms-table">
+          <tbody>
+            <tr>
+              <th>V_ann</th>
+              <td>$28,000 streaming net (sample disclosure)</td>
+            </tr>
+            <tr>
+              <th>Q</th>
+              <td>0.90 · document-backed</td>
+            </tr>
+            <tr>
+              <th>G</th>
+              <td>1.05 · traction factor</td>
+            </tr>
+            <tr>
+              <th>V_adj</th>
+              <td>$28,000 × 0.90 × 1.05 = <strong>$26,460</strong></td>
+            </tr>
+            <tr>
+              <th>R_suggested</th>
+              <td>(0.15 × $26,460 × 36/12) / 1.5 ≈ <strong>$7,938</strong> → listed at $8,000</td>
+            </tr>
+            <tr>
+              <th>V_implied</th>
+              <td>$8,000 / 0.15 = <strong>$53,333</strong> (100% of this stream under these terms)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="eyebrow">Included income</p>
+        <p style="color: var(--ink-soft); margin-bottom: 1.5rem">Streaming royalties only (distributor statements). Merch and live excluded in this sample.</p>
+
+        <div class="risk-callout">Sample listing for product demos. Not a real securities offering. You can lose money on music revenue shares.</div>
+      </div>
+
+      <aside class="offer-panel">
+        <h2>Offer terms</h2>
+        <div class="offer-row"><span>Raise (R)</span><strong>$8,000</strong></div>
+        <div class="offer-row"><span>Fan share (S)</span><strong>15% of defined net</strong></div>
+        <div class="offer-row"><span>Term (T)</span><strong>36 months</strong></div>
+        <div class="offer-row"><span>Cap (C)</span><strong>1.5× invested</strong></div>
+        <div class="offer-row"><span>Max pool payout</span><strong>$12,000</strong></div>
+        <div class="offer-row"><span>Muse raise fee</span><strong>6% at close</strong></div>
+
+        <div class="progress" style="margin-top: 1rem"><span style="width: 40%"></span></div>
+        <p class="progress-label">$3,200 raised · 40% · 12 fans (sample)</p>
+
+        <div class="btn-row" style="margin-top: 1.25rem; flex-direction: column">
+          <a class="btn btn-primary" href="invest.html" style="width: 100%">Invest</a>
+          <a class="btn btn-outline" href="index.html#waitlist" style="width: 100%">Join email waitlist</a>
+        </div>
+        <p class="form-note">Invest opens a prototype checkout that still uses the email signup flow — no real charges.</p>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="footer-meta">Prototype only · Mira Vale and all figures are fictional for demos.</p>
+    </div>
+  </footer>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

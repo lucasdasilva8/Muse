@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Invest — Mira Vale · Muse prototype</title>
+  <meta name="description" content="Prototype invest flow for Mira Vale. Submits interest via email — no real payment." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="proto-banner">
+    <strong>No real payments</strong> — submitting opens your email app with the investment interest, same pattern as the waitlist.
+  </div>
+
+  <nav class="site-nav" aria-label="Primary">
+    <div class="container">
+      <a class="logo" href="index.html">MUSE</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="browse.html">Browse</a></li>
+        <li><a href="listing-mira-vale.html">Mira Vale</a></li>
+        <li><a href="app-artist.html">Artist app</a></li>
+        <li><a class="nav-cta" href="index.html#waitlist">Waitlist</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="section" style="padding-top: 2.5rem">
+    <div class="container invest-layout">
+      <div>
+        <p class="eyebrow">Invest · prototype</p>
+        <h2 style="max-width: none">Back Mira Vale</h2>
+        <p class="section-lead">Enter an amount to see your pool fraction. When you submit, we open an email with your interest — the same waitlist email setup, with invest details included.</p>
+
+        <form class="waitlist" data-invest="mira-vale" style="max-width: none">
+          <h3>Investment interest</h3>
+          <p>Sample raise: $8,000 · 15% streaming net · 36 mo · 1.5× cap</p>
+
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="amount">Amount (USD)</label>
+            <input id="amount" name="amount" type="number" min="25" step="25" value="100" required data-invest-amount />
+          </div>
+
+          <div class="live-calc" id="invest-calc" aria-live="polite">
+            <strong>$100 → 1.25% of the fan pool</strong>
+            Your share of each payout period would be 1.25% of (15% × defined net). Max claim vs cap scales with your amount.
+          </div>
+
+          <button class="btn btn-primary" type="submit" style="margin-top: 1rem; width: 100%">Submit interest via email</button>
+          <p class="form-note">Opens mailto with artist, amount, and your email — no card charged.</p>
+          <div class="form-success" role="status">Thanks — send the draft email to record your interest. You can also <a href="index.html#waitlist">join the general waitlist</a>.</div>
+        </form>
+      </div>
+
+      <aside class="invest-summary">
+        <h3 style="font-family: var(--font-display); margin-bottom: 0.75rem">What you’re buying into</h3>
+        <div class="offer-row"><span>Artist</span><strong>Mira Vale</strong></div>
+        <div class="offer-row"><span>Raise (R)</span><strong>$8,000</strong></div>
+        <div class="offer-row"><span>Your fraction</span><strong id="frac-display">amount / $8,000</strong></div>
+        <div class="offer-row"><span>Pool share (S)</span><strong>15%</strong></div>
+        <div class="offer-row"><span>Term / cap</span><strong>36 mo · 1.5×</strong></div>
+        <div class="offer-row"><span>Verification</span><strong>Document-backed (sample)</strong></div>
+
+        <div class="formula" style="margin-top: 1.25rem">
+          fan_fraction = amount / 8000<br />
+          period_payout = fan_fraction × (0.15 × defined_net)
+        </div>
+
+        <p style="margin-top: 1rem">
+          <a class="btn btn-outline" href="listing-mira-vale.html">Back to listing</a>
+        </p>
+        <p class="form-note">Prefer just updates? <a href="index.html#waitlist">Email waitlist</a> without an amount.</p>
+      </aside>
+    </div>
+  </main>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
