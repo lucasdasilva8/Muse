@@ -7,7 +7,8 @@
    * paste the deployment URL here (ends with /exec).
    * Leave empty to fall back to mailto only.
    */
-  const SHEETS_WEB_APP_URL = "";
+  const SHEETS_WEB_APP_URL =
+    "https://script.google.com/macros/s/AKfycbw0fc8XOJOHHlAak1KTsZ12FBjzvqOUuhhBLvvrh389aQroiAedwEMHHgqAsaXLOg/exec";
 
   const RAISE = 8000;
 
