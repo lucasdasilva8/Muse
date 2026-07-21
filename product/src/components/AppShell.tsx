@@ -5,8 +5,10 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/browse", label: "Browse" },
   { href: "/artist/apply", label: "List yourself" },
-  { href: "/artist/dashboard", label: "Artist dashboard" },
+  { href: "/artist/dashboard", label: "Dashboard" },
   { href: "/portfolio", label: "Portfolio" },
+  { href: "/admin", label: "Admin" },
+  { href: "/session", label: "Session" },
 ];
 
 export function AppShell({
@@ -19,9 +21,9 @@ export function AppShell({
   return (
     <>
       <div className="banner">
-        <strong>PROTOTYPE — not fully functioning.</strong> Simulated listings
-        &amp; commitments only. No payments, no real accounts, no securities
-        offering.
+        <strong>PROTOTYPE — not fully functioning.</strong> Product app under
+        active development. Simulated listings, commits, reviews &amp; payouts
+        only — no real money or securities offering.
       </div>
       <nav className="shell-nav">
         <div className="shell-nav-inner">

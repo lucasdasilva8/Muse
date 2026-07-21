@@ -12,6 +12,7 @@ import type {
   Listing,
   MuseStore,
   OfferTerms,
+  PayoutCycle,
   RevenueInputs,
   TractionInputs,
   VerificationLevel,
@@ -160,6 +161,114 @@ export function investInListing(
       listings,
       investments: [investment, ...store.investments],
       currentFanEmail: investment.fanEmail,
+    },
+  };
+}
+
+export function approveListing(
+  store: MuseStore,
+  listingId: string
+): { store: MuseStore; listing?: Listing; error?: string } {
+  const listing = store.listings.find((l) => l.id === listingId);
+  if (!listing) return { store, error: "Listing not found." };
+  if (listing.status !== "pending_review" && listing.status !== "draft") {
+    return { store, error: "Only pending/draft listings can be approved." };
+  }
+  const next: Listing = {
+    ...listing,
+    status: "live",
+    autoApproved: false,
+    updatedAt: nowIso(),
+  };
+  return {
+    listing: next,
+    store: {
+      ...store,
+      listings: store.listings.map((l) => (l.id === listingId ? next : l)),
+    },
+  };
+}
+
+export function rejectListing(
+  store: MuseStore,
+  listingId: string,
+  reason = ""
+): { store: MuseStore; listing?: Listing; error?: string } {
+  const listing = store.listings.find((l) => l.id === listingId);
+  if (!listing) return { store, error: "Listing not found." };
+  const next: Listing = {
+    ...listing,
+    status: "closed",
+    updatedAt: nowIso(),
+    pricing: {
+      ...listing.pricing,
+      notes: [
+        ...listing.pricing.notes,
+        reason
+          ? `Rejected (prototype): ${reason}`
+          : "Rejected in prototype admin review.",
+      ],
+    },
+  };
+  return {
+    listing: next,
+    store: {
+      ...store,
+      listings: store.listings.map((l) => (l.id === listingId ? next : l)),
+    },
+  };
+}
+
+/** Simulate one revenue period → fan pool split. No money moves. */
+export function simulatePayout(
+  store: MuseStore,
+  input: {
+    listingId: string;
+    definedNet: number;
+    periodLabel?: string;
+  }
+): { store: MuseStore; payout?: PayoutCycle; error?: string } {
+  const listing = store.listings.find((l) => l.id === input.listingId);
+  if (!listing) return { store, error: "Listing not found." };
+  if (listing.status !== "live" && listing.status !== "funded") {
+    return { store, error: "Listing must be live or funded to report revenue." };
+  }
+
+  const definedNet = Number(input.definedNet);
+  if (!Number.isFinite(definedNet) || definedNet < 0) {
+    return { store, error: "Defined net must be a non-negative number." };
+  }
+
+  const poolAmount = listing.terms.S * definedNet;
+  const investments = store.investments.filter(
+    (i) => i.listingId === listing.id
+  );
+
+  const distributions = investments.map((inv) => ({
+    investmentId: inv.id,
+    fanEmail: inv.fanEmail,
+    fanName: inv.fanName,
+    amount: inv.fanFraction * poolAmount,
+  }));
+
+  const payout: PayoutCycle = {
+    id: createId("payout"),
+    listingId: listing.id,
+    createdAt: nowIso(),
+    periodLabel: input.periodLabel?.trim() || `Period ${nowIso().slice(0, 7)}`,
+    definedNet,
+    poolAmount,
+    distributions,
+    note: "PROTOTYPE simulation only — no bank transfer or escrow release.",
+  };
+
+  const payouts = store.payouts ?? [];
+
+  return {
+    payout,
+    store: {
+      ...store,
+      payouts: [payout, ...payouts],
     },
   };
 }

@@ -9,8 +9,11 @@ import path from "path";
 import { emptyStore } from "../seed";
 import type { MuseStore } from "../types";
 import {
+  approveListing,
   investInListing,
   publishArtistListing,
+  rejectListing,
+  simulatePayout,
   type PublishArtistInput,
 } from "../domain";
 
@@ -27,9 +30,16 @@ function ensureDir() {
   }
 }
 
+function normalizeStore(store: MuseStore): MuseStore {
+  return {
+    ...store,
+    payouts: store.payouts ?? [],
+  };
+}
+
 export function readDb(): MuseStore {
   if (globalForMuse.__museStore) {
-    return globalForMuse.__museStore;
+    return normalizeStore(globalForMuse.__museStore);
   }
 
   ensureDir();
@@ -42,7 +52,7 @@ export function readDb(): MuseStore {
 
   try {
     const raw = readFileSync(DATA_FILE, "utf8");
-    const parsed = JSON.parse(raw) as MuseStore;
+    const parsed = normalizeStore(JSON.parse(raw) as MuseStore);
     globalForMuse.__museStore = parsed;
     return parsed;
   } catch {
@@ -54,9 +64,10 @@ export function readDb(): MuseStore {
 
 export function writeDb(store: MuseStore): MuseStore {
   ensureDir();
-  globalForMuse.__museStore = store;
-  writeFileSync(DATA_FILE, JSON.stringify(store, null, 2), "utf8");
-  return store;
+  const next = normalizeStore(store);
+  globalForMuse.__museStore = next;
+  writeFileSync(DATA_FILE, JSON.stringify(next, null, 2), "utf8");
+  return next;
 }
 
 export function resetDb(): MuseStore {
@@ -83,6 +94,10 @@ export function dbListLive() {
   );
 }
 
+export function dbListPending() {
+  return readDb().listings.filter((l) => l.status === "pending_review");
+}
+
 export function dbGetListing(id: string) {
   return readDb().listings.find((l) => l.id === id);
 }
@@ -96,6 +111,12 @@ export function dbGetInvestments(listingId?: string, email?: string) {
     rows = rows.filter((i) => i.fanEmail.toLowerCase() === e);
   }
   return rows;
+}
+
+export function dbGetPayouts(listingId?: string) {
+  const rows = readDb().payouts ?? [];
+  if (!listingId) return rows;
+  return rows.filter((p) => p.listingId === listingId);
 }
 
 export function dbPublish(input: PublishArtistInput) {
@@ -115,12 +136,44 @@ export function dbInvest(input: {
   return result;
 }
 
+export function dbApprove(listingId: string) {
+  const result = approveListing(readDb(), listingId);
+  if (result.listing) writeDb(result.store);
+  return result;
+}
+
+export function dbReject(listingId: string, reason?: string) {
+  const result = rejectListing(readDb(), listingId, reason);
+  if (result.listing) writeDb(result.store);
+  return result;
+}
+
+export function dbSimulatePayout(input: {
+  listingId: string;
+  definedNet: number;
+  periodLabel?: string;
+}) {
+  const result = simulatePayout(readDb(), input);
+  if (result.payout) writeDb(result.store);
+  return result;
+}
+
 export function dbArtistListings(artistId: string | null) {
   const store = readDb();
   if (artistId) {
     return store.listings.filter((l) => l.artistId === artistId);
   }
   return store.listings.filter((l) => l.id === "listing_mira_vale");
+}
+
+export function dbSetCurrentArtist(artistId: string | null) {
+  const store = readDb();
+  return writeDb({ ...store, currentArtistId: artistId });
+}
+
+export function dbSetCurrentFan(email: string | null) {
+  const store = readDb();
+  return writeDb({ ...store, currentFanEmail: email });
 }
 
 export function dbSnapshot() {

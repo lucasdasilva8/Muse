@@ -1,6 +1,6 @@
 "use client";
 
-import type { Investment, Listing } from "./types";
+import type { Investment, Listing, PayoutCycle } from "./types";
 import type { PublishArtistInput } from "./domain";
 
 export type PrototypeMeta = {
@@ -80,4 +80,63 @@ export async function apiArtistDashboard(artistId?: string | null) {
 export async function apiResetPrototype() {
   const res = await fetch("/api/listings", { method: "DELETE" });
   return parse<{ ok: boolean; listings: Listing[] }>(res);
+}
+
+export async function apiAdminPending() {
+  const res = await fetch("/api/admin", { cache: "no-store" });
+  return parse<{ pending: Listing[] }>(res);
+}
+
+export async function apiAdminAction(
+  listingId: string,
+  action: "approve" | "reject",
+  reason?: string
+) {
+  const res = await fetch("/api/admin", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ listingId, action, reason }),
+  });
+  return parse<{ listing: Listing; pending: Listing[] }>(res);
+}
+
+export async function apiSimulatePayout(input: {
+  listingId: string;
+  definedNet: number;
+  periodLabel?: string;
+}) {
+  const res = await fetch("/api/payouts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  return parse<{ payout: PayoutCycle }>(res);
+}
+
+export async function apiListPayouts(listingId?: string) {
+  const q = listingId ? `?listingId=${encodeURIComponent(listingId)}` : "";
+  const res = await fetch(`/api/payouts${q}`, { cache: "no-store" });
+  return parse<{ payouts: PayoutCycle[] }>(res);
+}
+
+export async function apiGetSession() {
+  const res = await fetch("/api/session", { cache: "no-store" });
+  return parse<{
+    session: { artistId: string | null; fanEmail: string | null };
+  }>(res);
+}
+
+export async function apiSetSession(body: {
+  role: "artist" | "fan" | "clear";
+  email?: string;
+  artistId?: string;
+}) {
+  const res = await fetch("/api/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return parse<{
+    session: { artistId: string | null; fanEmail: string | null };
+  }>(res);
 }

@@ -75,6 +75,7 @@ export function emptyStore(): MuseStore {
         status: "committed",
       },
     ],
+    payouts: [],
     currentArtistId: null,
     currentFanEmail: null,
   };

@@ -85,10 +85,29 @@ export interface Investment {
   status: "interest" | "committed";
 }
 
+/** Simulated payout period — no real money moves */
+export interface PayoutCycle {
+  id: string;
+  listingId: string;
+  createdAt: string;
+  periodLabel: string;
+  definedNet: number;
+  poolAmount: number;
+  /** per-fan simulated amounts */
+  distributions: {
+    investmentId: string;
+    fanEmail: string;
+    fanName: string;
+    amount: number;
+  }[];
+  note: string;
+}
+
 export interface MuseStore {
   version: 1;
   listings: Listing[];
   investments: Investment[];
+  payouts: PayoutCycle[];
   currentArtistId: string | null;
   currentFanEmail: string | null;
 }

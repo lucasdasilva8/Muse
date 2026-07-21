@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
+import { apiInvest } from "@/lib/api";
+import { readClientSession } from "@/lib/clientSession";
 import { money, pct } from "@/lib/format";
 import { useHasMounted, useListingDetail } from "@/lib/hooks";
 import { fanFraction, fanPeriodPayout } from "@/lib/pricing";
-import { apiInvest } from "@/lib/api";
 
 export default function InvestPage() {
   const params = useParams();
@@ -23,6 +24,12 @@ export default function InvestPage() {
   const [notice, setNotice] = useState("");
   const [done, setDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const s = readClientSession();
+    if (s.name) setName(s.name);
+    if (s.email) setEmail(s.email);
+  }, []);
 
   const fraction = useMemo(() => {
     if (!listing) return 0;

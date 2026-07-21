@@ -1,7 +1,7 @@
-# Muse product backbone (PROTOTYPE)
+# Muse product backbone (PROTOTYPE — in development)
 
-Next.js app that simulates listing + investing. **Not fully functioning** — no
-payments, auth, escrow, or legal offering.
+Next.js app simulating the Muse product loop. **Not fully functioning** — no
+payments, real auth, escrow, or legal offering.
 
 ## Run
 
@@ -11,42 +11,30 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000 (or the port Next prints).
+Open the URL Next prints (often http://localhost:3000 or :3001).
 
-## What works (simulated)
+## Product loop (simulated)
 
-| Flow | UI | API |
-|------|----|-----|
-| Browse listings | `/browse` | `GET /api/listings` |
-| View offer | `/listing/[id]` | `GET /api/listings/[id]` |
-| Publish artist offer | `/artist/apply` | `POST /api/listings/publish` |
-| Simulate invest | `/invest/[id]` | `POST /api/invest` |
-| Portfolio lookup | `/portfolio` | `GET /api/me?email=` |
-| Artist dashboard | `/artist/dashboard` | `GET /api/me?artistId=` |
-| Reset demo data | Browse button | `DELETE /api/listings` |
+1. **Session** `/session` — pick fan / artist / admin (browser-only identity)
+2. **Artist apply** `/artist/apply` — publish offer via API
+3. **Admin** `/admin` — approve `pending_review` listings
+4. **Fan browse + invest** `/browse` → `/invest/[id]`
+5. **Dashboard** `/artist/dashboard` — report revenue → simulate payout split
+6. **Portfolio** `/portfolio` — look up commitments by email
 
-Persistence: local file `product/.data/muse.json` (gitignored).
+## API
 
-## What does NOT work yet
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET/DELETE | `/api/listings` | Live list / reset demo |
+| GET | `/api/listings/[id]` | Listing + investors |
+| POST | `/api/listings/publish` | Create offer |
+| POST | `/api/invest` | Simulate commitment |
+| GET/POST | `/api/admin` | Pending queue / approve-reject |
+| GET/POST | `/api/payouts` | List / simulate revenue period |
+| GET/POST | `/api/session` | Prototype server session bind |
+| GET | `/api/me` | Portfolio / artist dashboard data |
 
-- Real user accounts / login  
-- Stripe or any card charges  
-- Escrow / bank payouts  
-- Document verification uploads  
-- Supabase (schema file is ready, client not wired)  
-- Securities compliance  
+Persistence: `product/.data/muse.json` (gitignored).
 
-Every API response includes `"prototype": true`.
-
-## Future Supabase
-
-Schema draft: `supabase/schema.sql`  
-Copy `.env.example` → `.env.local` when you add keys later. The app still runs without them.
-
-## Architecture
-
-```
-UI pages → src/lib/api.ts → /api/* routes → src/lib/server/db.ts
-                                              ↳ domain.ts (pricing + rules)
-                                              ↳ .data/muse.json
-```
+Every response includes `"prototype": true`.

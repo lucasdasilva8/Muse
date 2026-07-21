@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { FormEvent, useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import {
   PricingPanel,
@@ -8,16 +9,31 @@ import {
   RiskBadge,
   VerificationBadge,
 } from "@/components/ListingBits";
+import { apiListPayouts, apiSimulatePayout } from "@/lib/api";
 import { money, pct } from "@/lib/format";
 import { useArtistDashboard, useHasMounted } from "@/lib/hooks";
 import { fanPeriodPayout } from "@/lib/pricing";
+import type { PayoutCycle } from "@/lib/types";
 
 export default function ArtistDashboardPage() {
   const mounted = useHasMounted();
-  const { listings, investments, currentArtistId, loading, error } =
+  const { listings, investments, currentArtistId, loading, error, refresh } =
     useArtistDashboard();
 
   const listing = listings[0];
+  const [definedNet, setDefinedNet] = useState(2400);
+  const [periodLabel, setPeriodLabel] = useState("");
+  const [payouts, setPayouts] = useState<PayoutCycle[]>([]);
+  const [payoutNotice, setPayoutNotice] = useState("");
+  const [payoutError, setPayoutError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!listing) return;
+    void apiListPayouts(listing.id)
+      .then((d) => setPayouts(d.payouts))
+      .catch(() => setPayouts([]));
+  }, [listing]);
 
   if (!mounted || loading) {
     return (
@@ -47,7 +63,28 @@ export default function ArtistDashboardPage() {
     );
   }
 
-  const samplePool = listing.terms.S * 2400;
+  async function onReport(e: FormEvent) {
+    e.preventDefault();
+    if (!listing) return;
+    setPayoutError("");
+    setPayoutNotice("");
+    setBusy(true);
+    try {
+      const result = await apiSimulatePayout({
+        listingId: listing.id,
+        definedNet,
+        periodLabel: periodLabel || undefined,
+      });
+      setPayoutNotice(result.notice || "Payout simulated.");
+      const list = await apiListPayouts(listing.id);
+      setPayouts(list.payouts);
+      await refresh();
+    } catch (err) {
+      setPayoutError(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <AppShell active="/artist/dashboard">
@@ -102,10 +139,6 @@ export default function ArtistDashboardPage() {
                   {listing.terms.T} mo · {listing.terms.C}×
                 </td>
               </tr>
-              <tr>
-                <th>Categories</th>
-                <td>{listing.revenue.categories.join(", ")}</td>
-              </tr>
             </tbody>
           </table>
 
@@ -116,7 +149,7 @@ export default function ArtistDashboardPage() {
                 <th>Fan</th>
                 <th>Amount</th>
                 <th>Pool %</th>
-                <th>Sample $2.4k month</th>
+                <th>If net $2.4k</th>
               </tr>
             </thead>
             <tbody>
@@ -142,10 +175,66 @@ export default function ArtistDashboardPage() {
               ))}
             </tbody>
           </table>
-          <p className="muted">
-            If this month’s defined net were $2,400, the pool would get{" "}
-            {money(samplePool)} (illustration only).
-          </p>
+
+          <h2 style={{ marginTop: "1.5rem" }}>Report revenue (simulate payout)</h2>
+          <form className="card" onSubmit={onReport}>
+            <div className="field">
+              <label>Period label</label>
+              <input
+                value={periodLabel}
+                onChange={(e) => setPeriodLabel(e.target.value)}
+                placeholder="e.g. 2026-Q2"
+              />
+            </div>
+            <div className="field">
+              <label>Defined net for period (USD)</label>
+              <input
+                type="number"
+                min={0}
+                value={definedNet}
+                onChange={(e) => setDefinedNet(Number(e.target.value))}
+              />
+            </div>
+            <p className="muted">
+              Pool gets {pct(listing.terms.S)} × net ={" "}
+              {money(listing.terms.S * definedNet)} split by fan fractions.
+            </p>
+            {payoutError && <p className="error">{payoutError}</p>}
+            {payoutNotice && <p className="callout-ok callout">{payoutNotice}</p>}
+            <button className="btn" type="submit" disabled={busy}>
+              {busy ? "Simulating…" : "Run prototype payout"}
+            </button>
+          </form>
+
+          {payouts.length > 0 && (
+            <>
+              <h2 style={{ marginTop: "1.25rem" }}>Payout history (sim)</h2>
+              {payouts.map((p) => (
+                <div className="card" key={p.id} style={{ marginBottom: "0.75rem" }}>
+                  <strong>{p.periodLabel}</strong>
+                  <p className="muted">
+                    Net {money(p.definedNet)} → pool {money(p.poolAmount)}
+                  </p>
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Fan</th>
+                        <th>Payout</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {p.distributions.map((d) => (
+                        <tr key={d.investmentId}>
+                          <td>{d.fanName}</td>
+                          <td>{money(d.amount)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+            </>
+          )}
         </div>
         <div>
           <PricingPanel listing={listing} />
