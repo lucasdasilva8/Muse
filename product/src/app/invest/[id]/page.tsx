@@ -5,22 +5,24 @@ import { FormEvent, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { money, pct } from "@/lib/format";
-import { useHasMounted, useListing } from "@/lib/hooks";
+import { useHasMounted, useListingDetail } from "@/lib/hooks";
 import { fanFraction, fanPeriodPayout } from "@/lib/pricing";
-import { investInListing } from "@/lib/store";
+import { apiInvest } from "@/lib/api";
 
 export default function InvestPage() {
   const params = useParams();
   const router = useRouter();
   const id = String(params.id || "");
   const mounted = useHasMounted();
-  const listing = useListing(id);
+  const { listing, loading, error: loadError, refresh } = useListingDetail(id);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [amount, setAmount] = useState(100);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [done, setDone] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const fraction = useMemo(() => {
     if (!listing) return 0;
@@ -32,7 +34,7 @@ export default function InvestPage() {
     return fanPeriodPayout(amount, listing.terms.R, listing.terms.S, 2400);
   }, [amount, listing]);
 
-  if (!mounted) {
+  if (!mounted || loading) {
     return (
       <AppShell>
         <p className="muted">Loading…</p>
@@ -40,10 +42,11 @@ export default function InvestPage() {
     );
   }
 
-  if (!listing) {
+  if (loadError || !listing) {
     return (
       <AppShell>
         <h1>Listing not found</h1>
+        <p className="error">{loadError}</p>
         <Link className="btn" href="/browse">
           Browse
         </Link>
@@ -51,39 +54,49 @@ export default function InvestPage() {
     );
   }
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
-    const result = investInListing({
-      listingId: id,
-      fanName: name,
-      fanEmail: email,
-      amount,
-    });
-    if (result.error) {
-      setError(result.error);
-      return;
+    setNotice("");
+    setSubmitting(true);
+    try {
+      const result = await apiInvest({
+        listingId: id,
+        fanName: name,
+        fanEmail: email,
+        amount,
+      });
+      setNotice(
+        result.notice ||
+          "Prototype commitment recorded — no payment processed."
+      );
+      setDone(true);
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not invest");
+    } finally {
+      setSubmitting(false);
     }
-    setDone(true);
   }
 
   return (
     <AppShell active="/browse">
-      <p className="eyebrow">Invest</p>
-      <h1>Back {listing.profile.stageName}</h1>
+      <p className="eyebrow">Invest · prototype</p>
+      <h1>Simulate backing {listing.profile.stageName}</h1>
       <p className="lead">
-        Commit an amount into the raise. Your pool fraction is amount ÷ R. This
-        writes to the local Muse store (no payment processor yet).
+        Submits to <code>/api/invest</code>. Records a fake commitment in the
+        prototype store. <strong>No card is charged.</strong>
       </p>
 
       <div className="grid-2">
         <form className="card" onSubmit={onSubmit}>
           {done ? (
             <div className="callout-ok callout">
-              <strong>Committed in prototype.</strong>
+              <strong>Prototype commitment saved.</strong>
               <p style={{ marginTop: "0.5rem" }}>
                 {money(amount)} → {pct(fraction, 2)} of the fan pool.
               </p>
+              {notice && <p className="muted">{notice}</p>}
               <div className="btn-row">
                 <button
                   type="button"
@@ -136,14 +149,19 @@ export default function InvestPage() {
                 </strong>
                 <p style={{ marginTop: "0.35rem" }}>
                   If defined net were $2,400 this period, you’d receive about{" "}
-                  {money(samplePayout)} before fees.
+                  {money(samplePayout)} before fees (illustration only).
                 </p>
               </div>
 
               {error && <p className="error">{error}</p>}
 
-              <button className="btn" type="submit" style={{ width: "100%" }}>
-                Confirm commitment
+              <button
+                className="btn"
+                type="submit"
+                style={{ width: "100%" }}
+                disabled={submitting}
+              >
+                {submitting ? "Saving…" : "Confirm prototype commitment"}
               </button>
             </>
           )}
@@ -173,10 +191,8 @@ export default function InvestPage() {
               </tr>
             </tbody>
           </table>
-          <div className="formula">
-            fan_fraction = amount / R
-            <br />
-            period_payout = fan_fraction × (S × defined_net)
+          <div className="callout">
+            Not fully functioning: no escrow, KYC, or payment processor.
           </div>
         </aside>
       </div>

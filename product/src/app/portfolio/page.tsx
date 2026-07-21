@@ -1,21 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { apiGetListing } from "@/lib/api";
 import { money, pct } from "@/lib/format";
-import { useHasMounted, useMuseStore } from "@/lib/hooks";
+import { useHasMounted, usePortfolio } from "@/lib/hooks";
 
 export default function PortfolioPage() {
   const mounted = useHasMounted();
-  const store = useMuseStore();
-  const [email, setEmail] = useState(store.currentFanEmail || "");
+  const [email, setEmail] = useState("alex@example.com");
+  const { investments, loading, error } = usePortfolio(email);
+  const [names, setNames] = useState<Record<string, string>>({});
 
-  const investments = useMemo(() => {
-    const e = email.trim().toLowerCase();
-    if (!e) return [];
-    return store.investments.filter((i) => i.fanEmail.toLowerCase() === e);
-  }, [email, store.investments]);
+  useEffect(() => {
+    let cancelled = false;
+    async function loadNames() {
+      const map: Record<string, string> = { ...names };
+      await Promise.all(
+        investments.map(async (inv) => {
+          if (map[inv.listingId]) return;
+          try {
+            const data = await apiGetListing(inv.listingId);
+            map[inv.listingId] = data.listing.profile.stageName;
+          } catch {
+            map[inv.listingId] = inv.listingId;
+          }
+        })
+      );
+      if (!cancelled) setNames(map);
+    }
+    void loadNames();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh names when investment set changes
+  }, [investments]);
 
   if (!mounted) {
     return (
@@ -27,11 +47,10 @@ export default function PortfolioPage() {
 
   return (
     <AppShell active="/portfolio">
-      <p className="eyebrow">Fan · portfolio</p>
-      <h1>Your commitments</h1>
+      <p className="eyebrow">Fan · portfolio · prototype</p>
+      <h1>Simulated commitments</h1>
       <p className="lead">
-        Look up investments by the email you used when committing. In a later
-        version this will be account-based.
+        Look up prototype investments by email. Not a real brokerage account.
       </p>
 
       <div className="card" style={{ maxWidth: 420, marginBottom: "1.5rem" }}>
@@ -45,12 +64,16 @@ export default function PortfolioPage() {
             placeholder="you@email.com"
           />
         </div>
-        <p className="muted">Try a sample: alex@example.com</p>
+        <p className="muted">Try sample: alex@example.com</p>
       </div>
 
-      {investments.length === 0 ? (
+      {loading ? (
+        <p className="muted">Loading…</p>
+      ) : error ? (
+        <p className="error">{error}</p>
+      ) : investments.length === 0 ? (
         <div className="card">
-          <p>No commitments for that email yet.</p>
+          <p>No prototype commitments for that email yet.</p>
           <div className="btn-row">
             <Link className="btn" href="/browse">
               Browse offers
@@ -69,22 +92,17 @@ export default function PortfolioPage() {
             </tr>
           </thead>
           <tbody>
-            {investments.map((inv) => {
-              const listing = store.listings.find((l) => l.id === inv.listingId);
-              return (
-                <tr key={inv.id}>
-                  <td>{listing?.profile.stageName || inv.listingId}</td>
-                  <td>{money(inv.amount)}</td>
-                  <td>{pct(inv.fanFraction, 2)}</td>
-                  <td>{inv.status}</td>
-                  <td>
-                    {listing && (
-                      <Link href={`/listing/${listing.id}`}>Open</Link>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
+            {investments.map((inv) => (
+              <tr key={inv.id}>
+                <td>{names[inv.listingId] || "…"}</td>
+                <td>{money(inv.amount)}</td>
+                <td>{pct(inv.fanFraction, 2)}</td>
+                <td>{inv.status} (sim)</td>
+                <td>
+                  <Link href={`/listing/${inv.listingId}`}>Open</Link>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       )}

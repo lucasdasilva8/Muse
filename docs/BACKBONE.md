@@ -1,44 +1,52 @@
-# Investment & listing backbone
+# Investment & listing backbone (PROTOTYPE)
 
-How the product app implements “put yourself on Muse” and “invest.”
+**Status:** Prototype — not fully functioning. Simulated data only.
 
-## State machine
+## How it runs today
+
+```
+Browser UI
+   ↓ fetch
+Next.js API routes (/api/listings, /api/invest, /api/me)
+   ↓
+server/db.ts  →  .data/muse.json
+   ↓
+domain.ts (publish + invest rules) + pricing.ts
+```
+
+Every JSON response includes:
+
+```json
+{
+  "prototype": true,
+  "payments": false,
+  "auth": false,
+  "escrow": false,
+  "legalOffering": false
+}
+```
+
+## State machine (simulated)
 
 ### Listing
-`draft` → (publish) → `live` | `pending_review` → `funded` → `closed`
-
-- **live**: open for investment  
-- **pending_review**: pricing incoherent; saved but not fan-browsable as live (dashboard still sees it — currently filter is live/funded only on browse; pending shows on artist dashboard via currentArtistId)  
-- **funded**: `raisedAmount >= R`
+`draft` → publish → `live` | `pending_review` → `funded`
 
 ### Investment
-On confirm: create `Investment` with `fanFraction = amount / R`, increment `listing.raisedAmount`.
+`POST /api/invest` creates a row with `status: "committed"` but **no payment** is taken.
 
-## Artist publish pipeline
+## Artist publish
 
-```
-profile + traction + revenue + terms
-        ↓
-computePricing(Q, G, V_adj, R_suggested, risk, coherent)
-        ↓
-if coherent → status live
-else → pending_review
-        ↓
-persist Listing in store
-```
+`POST /api/listings/publish` → `computePricing` → save listing in JSON store.
 
-## Fan invest pipeline
+## Fan invest
 
-```
-select listing → enter amount/email
-        ↓
-validate remaining capacity & min $25
-        ↓
-fanFraction = amount / R
-        ↓
-persist Investment + update raisedAmount
-```
+`POST /api/invest` → validate remaining raise → `fanFraction = amount / R` → save.
 
-## Swap-out path (production)
+## Future (not implemented)
 
-Replace `src/lib/store.ts` localStorage with API routes + Postgres. Keep `pricing.ts` and `types.ts` as the domain core.
+1. Run `supabase/schema.sql` in a Supabase project  
+2. Replace `server/db.ts` JSON reads/writes with Supabase client  
+3. Add auth, then Stripe Connect / escrow  
+4. Keep `domain.ts` + `pricing.ts` as the product core  
+
+Until then, treat the app as a **demo of the flow**, not a live marketplace.

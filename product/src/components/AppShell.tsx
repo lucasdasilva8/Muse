@@ -19,8 +19,9 @@ export function AppShell({
   return (
     <>
       <div className="banner">
-        <strong>Muse product backbone</strong> — local prototype. Data stays in
-        this browser. Not a live securities offering.
+        <strong>PROTOTYPE — not fully functioning.</strong> Simulated listings
+        &amp; commitments only. No payments, no real accounts, no securities
+        offering.
       </div>
       <nav className="shell-nav">
         <div className="shell-nav-inner">

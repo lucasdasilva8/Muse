@@ -4,20 +4,26 @@ import { AppShell } from "@/components/AppShell";
 export default function HomePage() {
   return (
     <AppShell active="/">
-      <p className="eyebrow">Product backbone</p>
-      <h1>List yourself. Let fans invest. Track the pool.</h1>
+      <p className="eyebrow">Prototype product</p>
+      <h1>List yourself. Simulate fan commitments.</h1>
       <p className="lead">
-        This app is the working skeleton for Muse: artists publish a revenue-share
-        offer using the pricing engine; fans commit amounts into the raise; both
-        sides see the same math. Data is stored locally in your browser for now.
+        This is a working prototype of Muse’s listing and invest flows. It uses a
+        local JSON “database” and HTTP APIs so you can see the backbone — but it
+        is <strong>not fully functioning</strong>: no Stripe, no auth, no legal
+        offering, no real money.
       </p>
+
+      <div className="callout">
+        Treat every “Invest” / “Publish” action as a demo. Data can be reset.
+        Do not collect real investor funds through this app.
+      </div>
 
       <div className="grid-2" style={{ marginTop: "1.5rem" }}>
         <div className="card">
-          <h2>Artists</h2>
+          <h2>Artists (prototype)</h2>
           <p className="muted">
-            Enter traction + revenue → set R / S / T / C → see Muse pricing →
-            publish a live listing.
+            Walk through apply → pricing → publish. Creates a simulated listing
+            via <code>/api/listings/publish</code>.
           </p>
           <div className="btn-row">
             <Link className="btn" href="/artist/apply">
@@ -29,10 +35,10 @@ export default function HomePage() {
           </div>
         </div>
         <div className="card">
-          <h2>Fans</h2>
+          <h2>Fans (prototype)</h2>
           <p className="muted">
-            Browse live offers, invest an amount, and track your pool fraction in
-            a portfolio.
+            Browse sample/live demos and simulate a commitment via{" "}
+            <code>/api/invest</code> — no card charged.
           </p>
           <div className="btn-row">
             <Link className="btn btn-ink" href="/browse">
@@ -43,11 +49,6 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-      </div>
-
-      <div className="callout" style={{ marginTop: "2rem" }}>
-        Backbone only: no Stripe yet, no legal offering, no server database.
-        Next step after this is auth + Postgres + escrow rails.
       </div>
     </AppShell>
   );

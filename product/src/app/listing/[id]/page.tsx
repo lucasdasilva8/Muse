@@ -10,27 +10,27 @@ import {
   VerificationBadge,
 } from "@/components/ListingBits";
 import { money, pct } from "@/lib/format";
-import { useHasMounted, useListing, useListingInvestments } from "@/lib/hooks";
+import { useHasMounted, useListingDetail } from "@/lib/hooks";
 
 export default function ListingPage() {
   const params = useParams();
   const id = String(params.id || "");
   const mounted = useHasMounted();
-  const listing = useListing(id);
-  const investments = useListingInvestments(id);
+  const { listing, investments, loading, error } = useListingDetail(id);
 
-  if (!mounted) {
+  if (!mounted || loading) {
     return (
       <AppShell>
-        <p className="muted">Loading…</p>
+        <p className="muted">Loading prototype listing…</p>
       </AppShell>
     );
   }
 
-  if (!listing) {
+  if (error || !listing) {
     return (
       <AppShell>
         <h1>Listing not found</h1>
+        <p className="error">{error}</p>
         <Link className="btn" href="/browse">
           Back to browse
         </Link>
@@ -42,13 +42,19 @@ export default function ListingPage() {
 
   return (
     <AppShell active="/browse">
-      <p className="eyebrow">Listing</p>
+      <p className="eyebrow">Listing · prototype</p>
       <h1>{listing.profile.stageName}</h1>
       <p className="meta">
         {listing.profile.genre} · {listing.profile.location} ·{" "}
         <VerificationBadge level={listing.revenue.verification} />
         <RiskBadge risk={listing.pricing.risk} />
+        <span className="badge badge-mid">Not a real offer</span>
       </p>
+
+      <div className="callout">
+        Prototype page loaded from <code>/api/listings/{listing.id}</code>.
+        Investing only records a simulated commitment.
+      </div>
 
       <div className="grid-2" style={{ marginTop: "1.5rem" }}>
         <div>
@@ -75,7 +81,9 @@ export default function ListingPage() {
 
           <PricingPanel listing={listing} />
 
-          <h2 style={{ marginTop: "1.5rem" }}>Investors ({investments.length})</h2>
+          <h2 style={{ marginTop: "1.5rem" }}>
+            Simulated investors ({investments.length})
+          </h2>
           <table className="table">
             <thead>
               <tr>
@@ -94,7 +102,7 @@ export default function ListingPage() {
               ))}
               {investments.length === 0 && (
                 <tr>
-                  <td colSpan={3}>No investments yet.</td>
+                  <td colSpan={3}>No commitments yet.</td>
                 </tr>
               )}
             </tbody>
@@ -136,15 +144,11 @@ export default function ListingPage() {
               href={`/invest/${listing.id}`}
               style={{ width: "100%" }}
             >
-              Invest
+              Simulate invest
             </Link>
             <Link className="btn btn-outline" href="/browse" style={{ width: "100%" }}>
               All listings
             </Link>
-          </div>
-          <div className="callout">
-            Prototype commit only — no real money moves. Legal offering not
-            enabled.
           </div>
         </aside>
       </div>

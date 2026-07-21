@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { money, pct } from "@/lib/format";
 import { computePricing, suggestTermsFromRevenue } from "@/lib/pricing";
-import { publishArtistListing } from "@/lib/store";
+import { apiPublishListing } from "@/lib/api";
 import type {
   IncomeCategory,
   OfferTerms,
@@ -19,6 +19,7 @@ export default function ArtistApplyPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [error, setError] = useState("");
+  const [publishing, setPublishing] = useState(false);
 
   const [stageName, setStageName] = useState("");
   const [legalName, setLegalName] = useState("");
@@ -89,41 +90,44 @@ export default function ArtistApplyPage() {
     setStep((s) => Math.max(0, s - 1));
   }
 
-  function onPublish(e: FormEvent) {
+  async function onPublish(e: FormEvent) {
     e.preventDefault();
     setError("");
-    const result = publishArtistListing({
-      stageName,
-      legalName,
-      email,
-      genre,
-      location,
-      bio,
-      links,
-      raisePurpose,
-      monthlyListeners,
-      growthRate6mo,
-      catalogReleases,
-      vann,
-      verification,
-      categories,
-      docsNote,
-      terms,
-    });
-    if (result.error || !result.listing) {
-      setError(result.error || "Could not publish.");
-      return;
+    setPublishing(true);
+    try {
+      const result = await apiPublishListing({
+        stageName,
+        legalName,
+        email,
+        genre,
+        location,
+        bio,
+        links,
+        raisePurpose,
+        monthlyListeners,
+        growthRate6mo,
+        catalogReleases,
+        vann,
+        verification,
+        categories,
+        docsNote,
+        terms,
+      });
+      router.push(`/listing/${result.listing.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not publish.");
+    } finally {
+      setPublishing(false);
     }
-    router.push(`/listing/${result.listing.id}`);
   }
 
   return (
     <AppShell active="/artist/apply">
-      <p className="eyebrow">Artist · list yourself</p>
-      <h1>Create your Muse offer</h1>
+      <p className="eyebrow">Artist · list yourself · prototype</p>
+      <h1>Create a prototype Muse offer</h1>
       <p className="lead">
-        Five steps from profile to a live listing. Muse runs pricing on your
-        inputs and flags incoherent terms.
+        Five steps from profile to a simulated listing via{" "}
+        <code>/api/listings/publish</code>. Not a real fundraising round.
       </p>
 
       <div className="steps">
@@ -356,8 +360,8 @@ export default function ArtistApplyPage() {
               <h2>Publish</h2>
               <p className="muted">
                 {pricing.coherent
-                  ? "Terms look coherent — listing will go live immediately in this backbone."
-                  : "Terms need review — listing will be saved as pending_review (still visible to you on the dashboard)."}
+                  ? "Terms look coherent — prototype will mark the listing live (simulated)."
+                  : "Terms need review — prototype saves as pending_review."}
               </p>
               <table className="table">
                 <tbody>
@@ -382,8 +386,13 @@ export default function ArtistApplyPage() {
                   </tr>
                 </tbody>
               </table>
-              <button className="btn" type="submit" style={{ width: "100%" }}>
-                Publish listing
+              <button
+                className="btn"
+                type="submit"
+                style={{ width: "100%" }}
+                disabled={publishing}
+              >
+                {publishing ? "Publishing…" : "Publish prototype listing"}
               </button>
             </>
           )}

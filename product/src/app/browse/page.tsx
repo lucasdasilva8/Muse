@@ -9,33 +9,32 @@ import {
 } from "@/components/ListingBits";
 import { money, pct } from "@/lib/format";
 import { useHasMounted, useLiveListings } from "@/lib/hooks";
-import { resetStore } from "@/lib/store";
+import { apiResetPrototype } from "@/lib/api";
 
 export default function BrowsePage() {
   const mounted = useHasMounted();
-  const listings = useLiveListings();
+  const { listings, loading, error, refresh } = useLiveListings();
 
   return (
     <AppShell active="/browse">
-      <p className="eyebrow">Fan · browse</p>
-      <h1>Live offers</h1>
+      <p className="eyebrow">Fan · browse · prototype</p>
+      <h1>Live offers (simulated)</h1>
       <p className="lead">
-        Listings published through the artist flow (plus the Mira Vale sample)
-        show up here.
+        Listings from the prototype API. Commitments are fake — nothing is
+        sold or charged.
       </p>
 
-      {!mounted ? (
-        <p className="muted">Loading local store…</p>
+      {!mounted || loading ? (
+        <p className="muted">Loading prototype store…</p>
+      ) : error ? (
+        <p className="error">{error}</p>
       ) : listings.length === 0 ? (
         <div className="card">
           <p>No live listings yet.</p>
           <div className="btn-row">
             <Link className="btn" href="/artist/apply">
-              Create one
+              Create a prototype listing
             </Link>
-            <button className="btn btn-outline" type="button" onClick={() => resetStore()}>
-              Reset sample data
-            </button>
           </div>
         </div>
       ) : (
@@ -47,11 +46,12 @@ export default function BrowsePage() {
                 {l.profile.genre} · {l.profile.location} ·{" "}
                 <VerificationBadge level={l.revenue.verification} />
                 <RiskBadge risk={l.pricing.risk} />
+                <span className="badge badge-mid">Prototype</span>
               </p>
               <p className="meta" style={{ marginTop: "0.35rem" }}>
                 {money(l.terms.R)} raise · {pct(l.terms.S)} share · {l.terms.T}{" "}
-                mo · {l.terms.C}× cap · {l.traction.monthlyListeners.toLocaleString()}{" "}
-                listeners
+                mo · {l.terms.C}× cap ·{" "}
+                {l.traction.monthlyListeners.toLocaleString()} listeners
               </p>
               <RaiseProgress listing={l} />
             </div>
@@ -67,12 +67,12 @@ export default function BrowsePage() {
           <button
             type="button"
             className="btn btn-outline"
-            onClick={() => {
-              resetStore();
-              window.location.reload();
+            onClick={async () => {
+              await apiResetPrototype();
+              await refresh();
             }}
           >
-            Reset to sample data
+            Reset prototype data
           </button>
         </p>
       )}

@@ -9,25 +9,28 @@ import {
   VerificationBadge,
 } from "@/components/ListingBits";
 import { money, pct } from "@/lib/format";
-import { useHasMounted, useMuseStore } from "@/lib/hooks";
+import { useArtistDashboard, useHasMounted } from "@/lib/hooks";
 import { fanPeriodPayout } from "@/lib/pricing";
-import { getInvestmentsForListing } from "@/lib/store";
 
 export default function ArtistDashboardPage() {
   const mounted = useHasMounted();
-  const store = useMuseStore();
-
-  const artistId = store.currentArtistId;
-  const listings = artistId
-    ? store.listings.filter((l) => l.artistId === artistId)
-    : store.listings.filter((l) => l.id === "listing_mira_vale");
+  const { listings, investments, currentArtistId, loading, error } =
+    useArtistDashboard();
 
   const listing = listings[0];
 
-  if (!mounted) {
+  if (!mounted || loading) {
     return (
       <AppShell active="/artist/dashboard">
-        <p className="muted">Loading…</p>
+        <p className="muted">Loading prototype dashboard…</p>
+      </AppShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppShell active="/artist/dashboard">
+        <p className="error">{error}</p>
       </AppShell>
     );
   }
@@ -36,7 +39,7 @@ export default function ArtistDashboardPage() {
     return (
       <AppShell active="/artist/dashboard">
         <h1>No artist listing yet</h1>
-        <p className="lead">Publish an offer to see your dashboard.</p>
+        <p className="lead">Publish a prototype offer to see your dashboard.</p>
         <Link className="btn" href="/artist/apply">
           List yourself
         </Link>
@@ -44,22 +47,29 @@ export default function ArtistDashboardPage() {
     );
   }
 
-  const investments = getInvestmentsForListing(listing.id);
   const samplePool = listing.terms.S * 2400;
 
   return (
     <AppShell active="/artist/dashboard">
-      <p className="eyebrow">Artist dashboard</p>
+      <p className="eyebrow">Artist dashboard · prototype</p>
       <h1>{listing.profile.stageName}</h1>
       <p className="meta">
         <VerificationBadge level={listing.revenue.verification} />
         <RiskBadge risk={listing.pricing.risk} />
         <span className="badge badge-mid">{listing.status}</span>
+        <span className="badge badge-warn">Simulated</span>
       </p>
+
+      <div className="callout">
+        Loaded from prototype API. No payouts are sent.{" "}
+        {currentArtistId
+          ? `Bound to artist ${currentArtistId}.`
+          : "Showing sample Mira Vale until you publish."}
+      </div>
 
       <div className="grid-3" style={{ margin: "1.25rem 0" }}>
         <div className="card stat">
-          <div className="label">Raised</div>
+          <div className="label">Raised (sim)</div>
           <div className="value">{money(listing.raisedAmount)}</div>
           <RaiseProgress listing={listing} />
         </div>
@@ -99,7 +109,7 @@ export default function ArtistDashboardPage() {
             </tbody>
           </table>
 
-          <h2>Investors</h2>
+          <h2>Simulated investors</h2>
           <table className="table">
             <thead>
               <tr>
@@ -134,7 +144,7 @@ export default function ArtistDashboardPage() {
           </table>
           <p className="muted">
             If this month’s defined net were $2,400, the pool would get{" "}
-            {money(samplePool)} (S × net).
+            {money(samplePool)} (illustration only).
           </p>
         </div>
         <div>
@@ -147,12 +157,6 @@ export default function ArtistDashboardPage() {
               Create another
             </Link>
           </div>
-          {!artistId && (
-            <p className="muted" style={{ marginTop: "1rem" }}>
-              Showing Mira Vale sample. Publish your own offer to bind this
-              dashboard to your artist id.
-            </p>
-          )}
         </div>
       </div>
     </AppShell>

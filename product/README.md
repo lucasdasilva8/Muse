@@ -1,6 +1,7 @@
-# Muse product backbone
+# Muse product backbone (PROTOTYPE)
 
-Next.js app that implements the core investment / listing pipeline locally.
+Next.js app that simulates listing + investing. **Not fully functioning** — no
+payments, auth, escrow, or legal offering.
 
 ## Run
 
@@ -10,43 +11,42 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000
+Open http://localhost:3000 (or the port Next prints).
 
-## Flows
+## What works (simulated)
 
-### Artist — put yourself on Muse
-`/artist/apply` → Profile → Traction → Revenue → Terms → Publish  
-Uses `computePricing()` for Q, G, V_adj, R_suggested, risk, coherence.  
-Coherent offers go `live`; incoherent ones go `pending_review`.
+| Flow | UI | API |
+|------|----|-----|
+| Browse listings | `/browse` | `GET /api/listings` |
+| View offer | `/listing/[id]` | `GET /api/listings/[id]` |
+| Publish artist offer | `/artist/apply` | `POST /api/listings/publish` |
+| Simulate invest | `/invest/[id]` | `POST /api/invest` |
+| Portfolio lookup | `/portfolio` | `GET /api/me?email=` |
+| Artist dashboard | `/artist/dashboard` | `GET /api/me?artistId=` |
+| Reset demo data | Browse button | `DELETE /api/listings` |
 
-### Fan — invest
-`/browse` → `/listing/[id]` → `/invest/[id]`  
-Commits amount into raise (`raisedAmount`, `fanFraction = amount / R`).  
-`/portfolio` looks up commitments by email.
+Persistence: local file `product/.data/muse.json` (gitignored).
 
-### Artist dashboard
-`/artist/dashboard` — raise progress, investors, pricing snapshot, sample payout preview.
+## What does NOT work yet
+
+- Real user accounts / login  
+- Stripe or any card charges  
+- Escrow / bank payouts  
+- Document verification uploads  
+- Supabase (schema file is ready, client not wired)  
+- Securities compliance  
+
+Every API response includes `"prototype": true`.
+
+## Future Supabase
+
+Schema draft: `supabase/schema.sql`  
+Copy `.env.example` → `.env.local` when you add keys later. The app still runs without them.
 
 ## Architecture
 
-| Piece | Path | Role |
-|-------|------|------|
-| Types | `src/lib/types.ts` | Artist, listing, investment domain |
-| Pricing | `src/lib/pricing.ts` | Math + policy guardrails |
-| Store | `src/lib/store.ts` | localStorage persistence (swap later for API/DB) |
-| Seed | `src/lib/seed.ts` | Mira Vale sample listing |
-
-Data key: `muse.store.v1` in the browser.
-
-## Not included yet (next backbone layers)
-
-- Auth (Clerk / Supabase)
-- Postgres
-- Stripe Connect / escrow
-- Document upload
-- Real email / notifications
-- Securities compliance gates
-
-## Marketing site
-
-Static GitHub Pages site lives in the repo root. Link users to this app once deployed (Vercel) or run locally alongside Pages.
+```
+UI pages → src/lib/api.ts → /api/* routes → src/lib/server/db.ts
+                                              ↳ domain.ts (pricing + rules)
+                                              ↳ .data/muse.json
+```
