@@ -1,5 +1,14 @@
 (function () {
-  const WAITLIST_EMAIL = "muse.waitlist@example.com";
+  // Notifications + sheet owner
+  const WAITLIST_EMAIL = "lucas_da_silva@brown.edu";
+
+  /**
+   * After you deploy docs/google-apps-script/MuseWaitlist.gs as a Web app,
+   * paste the deployment URL here (ends with /exec).
+   * Leave empty to fall back to mailto only.
+   */
+  const SHEETS_WEB_APP_URL = "";
+
   const RAISE = 8000;
 
   const navToggle = document.querySelector(".nav-toggle");
@@ -38,6 +47,39 @@
       encodeURIComponent(body);
   }
 
+  /**
+   * Send to Google Sheet via Apps Script when configured.
+   * Uses no-cors so Google's redirect response does not block success UX.
+   * Also opens mailto as a backup copy to lucas_da_silva@brown.edu when sheet URL is missing.
+   */
+  function submitInterest(payload, mailtoSubject, mailtoBody) {
+    if (SHEETS_WEB_APP_URL) {
+      return fetch(SHEETS_WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload),
+      }).then(function () {
+        return { via: "sheet" };
+      });
+    }
+
+    openMailto(mailtoSubject, mailtoBody);
+    return Promise.resolve({ via: "mailto" });
+  }
+
+  function markSuccess(form, via) {
+    const success = form.querySelector(".form-success");
+    if (success) {
+      if (via === "sheet") {
+        success.textContent =
+          "Thanks — your response was saved to the Muse interest sheet. A copy was also emailed to the team.";
+      }
+      success.classList.add("is-shown");
+    }
+    form.reset();
+  }
+
   document.querySelectorAll("[data-waitlist]").forEach((form) => {
     form.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -49,14 +91,52 @@
 
       if (!email) return;
 
-      openMailto(
-        `Muse waitlist — ${role}`,
-        `Role: ${role}\nName: ${name}\nEmail: ${email}\nNote: ${note}\n`
-      );
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) btn.disabled = true;
 
-      const success = form.querySelector(".form-success");
-      if (success) success.classList.add("is-shown");
-      form.reset();
+      const payload = {
+        type: "waitlist",
+        role: role,
+        name: name,
+        email: email,
+        note: note,
+        source: window.location.href,
+      };
+
+      submitInterest(
+        payload,
+        "Muse waitlist — " + role,
+        "Role: " +
+          role +
+          "\nName: " +
+          name +
+          "\nEmail: " +
+          email +
+          "\nNote: " +
+          note +
+          "\n"
+      )
+        .then(function (result) {
+          markSuccess(form, result.via);
+        })
+        .catch(function () {
+          openMailto(
+            "Muse waitlist — " + role,
+            "Role: " +
+              role +
+              "\nName: " +
+              name +
+              "\nEmail: " +
+              email +
+              "\nNote: " +
+              note +
+              "\n"
+          );
+          markSuccess(form, "mailto");
+        })
+        .finally(function () {
+          if (btn) btn.disabled = false;
+        });
     });
   });
 
@@ -106,25 +186,44 @@
       if (!email || !amount) return;
 
       const pct = ((Number(amount) / RAISE) * 100).toFixed(2);
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) btn.disabled = true;
 
-      openMailto(
-        `Muse invest interest — ${artist}`,
-        [
-          "Type: investment interest (prototype — no payment)",
-          "Artist: Mira Vale",
-          "Listing: 15% streaming net · 36 months · 1.5× cap · $8,000 raise",
-          `Amount: $${amount}`,
-          `Pool fraction: ${pct}%`,
-          `Name: ${name}`,
-          `Email: ${email}`,
-          "",
-          "Also add me to the Muse waitlist.",
-          "",
-        ].join("\n")
-      );
+      const mailtoBody = [
+        "Type: investment interest (prototype — no payment)",
+        "Artist: Mira Vale",
+        "Listing: 15% streaming net · 36 months · 1.5× cap · $8,000 raise",
+        "Amount: $" + amount,
+        "Pool fraction: " + pct + "%",
+        "Name: " + name,
+        "Email: " + email,
+        "",
+        "Also add me to the Muse waitlist.",
+        "",
+      ].join("\n");
 
-      const success = form.querySelector(".form-success");
-      if (success) success.classList.add("is-shown");
+      const payload = {
+        type: "invest_interest",
+        role: "fan",
+        name: name,
+        email: email,
+        note: "Invest interest in Mira Vale (prototype)",
+        amount: amount,
+        extra: "pool=" + pct + "%; artist=" + artist,
+        source: window.location.href,
+      };
+
+      submitInterest(payload, "Muse invest interest — " + artist, mailtoBody)
+        .then(function (result) {
+          markSuccess(form, result.via);
+        })
+        .catch(function () {
+          openMailto("Muse invest interest — " + artist, mailtoBody);
+          markSuccess(form, "mailto");
+        })
+        .finally(function () {
+          if (btn) btn.disabled = false;
+        });
     });
   });
 })();

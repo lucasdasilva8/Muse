@@ -47,9 +47,11 @@ python3 -m http.server 8080
 
 Open http://localhost:8080
 
-### Waitlist email
+### Waitlist → Google Sheet
 
-Forms open a mailto to `muse.waitlist@example.com`. Change that address in `assets/js/main.js` to your real inbox (or swap in Formspree / Google Forms later).
+Interest forms notify **lucas_da_silva@brown.edu** and can append to a Google Sheet.
+
+See [docs/WAITLIST_SHEET.md](docs/WAITLIST_SHEET.md) — paste your Apps Script web app URL into `assets/js/main.js` as `SHEETS_WEB_APP_URL`. Until then, forms fall back to mailto that inbox.
 
 ## Product backbone (Next.js)
 
