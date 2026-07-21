@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { dbPublish, getPrototypeMeta } from "@/lib/server/db";
 import type { PublishArtistInput } from "@/lib/domain";
+import { dbPublish, getPrototypeMeta } from "@/lib/server/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const result = dbPublish(body);
+  const result = await dbPublish(body);
   if (result.error || !result.listing) {
     return NextResponse.json(
       { ...getPrototypeMeta(), error: result.error || "Could not publish" },
@@ -28,6 +28,6 @@ export async function POST(req: Request) {
     ...getPrototypeMeta(),
     listing: result.listing,
     notice:
-      "Prototype publish only — listing is simulated in local JSON, not a real fundraising round.",
+      "Prototype publish only — not a real fundraising round.",
   });
 }

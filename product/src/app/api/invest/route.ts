@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const result = dbInvest({
+  const result = await dbInvest({
     listingId: String(body.listingId || ""),
     fanName: String(body.fanName || ""),
     fanEmail: String(body.fanEmail || ""),

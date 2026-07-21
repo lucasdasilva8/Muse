@@ -103,11 +103,35 @@ export interface PayoutCycle {
   note: string;
 }
 
+export type DocumentCategory =
+  | "distributor_statement"
+  | "tax_return"
+  | "bank_export"
+  | "other";
+
+/** Prototype financial document metadata (file may be local or Supabase Storage) */
+export interface ArtistDocument {
+  id: string;
+  listingId: string;
+  artistId: string;
+  createdAt: string;
+  filename: string;
+  mimeType: string;
+  sizeBytes: number;
+  category: DocumentCategory;
+  /** local relative path or supabase storage path */
+  storagePath: string;
+  /** true only after human review — always false on upload in prototype */
+  verified: boolean;
+  backend: "local" | "supabase";
+}
+
 export interface MuseStore {
   version: 1;
   listings: Listing[];
   investments: Investment[];
   payouts: PayoutCycle[];
+  documents: ArtistDocument[];
   currentArtistId: string | null;
   currentFanEmail: string | null;
 }

@@ -76,6 +76,7 @@ export function emptyStore(): MuseStore {
       },
     ],
     payouts: [],
+    documents: [],
     currentArtistId: null,
     currentFanEmail: null,
   };

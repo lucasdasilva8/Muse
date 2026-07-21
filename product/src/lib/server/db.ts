@@ -1,181 +1,113 @@
 /**
- * Prototype server database.
- * Persists to product/.data/muse.json for local demos.
- * NOT durable production storage. NOT wired to real Supabase unless you add keys later.
+ * Database facade — local JSON by default, Supabase when env is configured.
+ * Prototype only.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import path from "path";
-import { emptyStore } from "../seed";
-import type { MuseStore } from "../types";
-import {
-  approveListing,
-  investInListing,
-  publishArtistListing,
-  rejectListing,
-  simulatePayout,
-  type PublishArtistInput,
-} from "../domain";
-
-const DATA_DIR = path.join(process.cwd(), ".data");
-const DATA_FILE = path.join(DATA_DIR, "muse.json");
-
-const globalForMuse = globalThis as unknown as {
-  __museStore?: MuseStore;
-};
-
-function ensureDir() {
-  if (!existsSync(DATA_DIR)) {
-    mkdirSync(DATA_DIR, { recursive: true });
-  }
-}
-
-function normalizeStore(store: MuseStore): MuseStore {
-  return {
-    ...store,
-    payouts: store.payouts ?? [],
-  };
-}
-
-export function readDb(): MuseStore {
-  if (globalForMuse.__museStore) {
-    return normalizeStore(globalForMuse.__museStore);
-  }
-
-  ensureDir();
-  if (!existsSync(DATA_FILE)) {
-    const seed = emptyStore();
-    writeFileSync(DATA_FILE, JSON.stringify(seed, null, 2), "utf8");
-    globalForMuse.__museStore = seed;
-    return seed;
-  }
-
-  try {
-    const raw = readFileSync(DATA_FILE, "utf8");
-    const parsed = normalizeStore(JSON.parse(raw) as MuseStore);
-    globalForMuse.__museStore = parsed;
-    return parsed;
-  } catch {
-    const seed = emptyStore();
-    globalForMuse.__museStore = seed;
-    return seed;
-  }
-}
-
-export function writeDb(store: MuseStore): MuseStore {
-  ensureDir();
-  const next = normalizeStore(store);
-  globalForMuse.__museStore = next;
-  writeFileSync(DATA_FILE, JSON.stringify(next, null, 2), "utf8");
-  return next;
-}
-
-export function resetDb(): MuseStore {
-  return writeDb(emptyStore());
-}
+import type { PublishArtistInput } from "../domain";
+import { getBackendMode } from "../supabase/client";
+import * as local from "./db-local";
+import * as remote from "./db-supabase";
 
 export function getPrototypeMeta() {
+  const mode = getBackendMode();
   return {
     prototype: true as const,
-    mode: "local-json-file",
-    persistence: ".data/muse.json",
+    mode: mode === "supabase" ? "supabase" : "local-json-file",
+    persistence:
+      mode === "supabase" ? "supabase postgres + storage" : ".data/muse.json",
     payments: false,
     auth: false,
     escrow: false,
     legalOffering: false,
     message:
-      "Muse prototype API — simulated commitments only. No real money, accounts, or securities offering.",
+      "Muse prototype API — simulated only. No real money, accounts, or securities offering.",
   };
 }
 
-export function dbListLive() {
-  return readDb().listings.filter(
-    (l) => l.status === "live" || l.status === "funded"
-  );
+export async function resetDb() {
+  if (getBackendMode() === "supabase") return remote.sbResetDb();
+  return local.resetDb();
 }
 
-export function dbListPending() {
-  return readDb().listings.filter((l) => l.status === "pending_review");
+export async function dbListLive() {
+  if (getBackendMode() === "supabase") return remote.sbListLive();
+  return local.dbListLive();
 }
 
-export function dbGetListing(id: string) {
-  return readDb().listings.find((l) => l.id === id);
+export async function dbListPending() {
+  if (getBackendMode() === "supabase") return remote.sbListPending();
+  return local.dbListPending();
 }
 
-export function dbGetInvestments(listingId?: string, email?: string) {
-  const store = readDb();
-  let rows = store.investments;
-  if (listingId) rows = rows.filter((i) => i.listingId === listingId);
-  if (email) {
-    const e = email.trim().toLowerCase();
-    rows = rows.filter((i) => i.fanEmail.toLowerCase() === e);
+export async function dbGetListing(id: string) {
+  if (getBackendMode() === "supabase") return remote.sbGetListing(id);
+  return local.dbGetListing(id);
+}
+
+export async function dbGetInvestments(listingId?: string, email?: string) {
+  if (getBackendMode() === "supabase") {
+    return remote.sbGetInvestments(listingId, email);
   }
-  return rows;
+  return local.dbGetInvestments(listingId, email);
 }
 
-export function dbGetPayouts(listingId?: string) {
-  const rows = readDb().payouts ?? [];
-  if (!listingId) return rows;
-  return rows.filter((p) => p.listingId === listingId);
+export async function dbGetPayouts(listingId?: string) {
+  if (getBackendMode() === "supabase") return remote.sbGetPayouts(listingId);
+  return local.dbGetPayouts(listingId);
 }
 
-export function dbPublish(input: PublishArtistInput) {
-  const result = publishArtistListing(readDb(), input);
-  if (result.listing) writeDb(result.store);
-  return result;
+export async function dbPublish(input: PublishArtistInput) {
+  if (getBackendMode() === "supabase") return remote.sbPublish(input);
+  return local.dbPublish(input);
 }
 
-export function dbInvest(input: {
+export async function dbInvest(input: {
   listingId: string;
   fanName: string;
   fanEmail: string;
   amount: number;
 }) {
-  const result = investInListing(readDb(), input);
-  if (result.investment) writeDb(result.store);
-  return result;
+  if (getBackendMode() === "supabase") return remote.sbInvest(input);
+  return local.dbInvest(input);
 }
 
-export function dbApprove(listingId: string) {
-  const result = approveListing(readDb(), listingId);
-  if (result.listing) writeDb(result.store);
-  return result;
+export async function dbApprove(listingId: string) {
+  if (getBackendMode() === "supabase") return remote.sbApprove(listingId);
+  return local.dbApprove(listingId);
 }
 
-export function dbReject(listingId: string, reason?: string) {
-  const result = rejectListing(readDb(), listingId, reason);
-  if (result.listing) writeDb(result.store);
-  return result;
+export async function dbReject(listingId: string, reason?: string) {
+  if (getBackendMode() === "supabase") return remote.sbReject(listingId, reason);
+  return local.dbReject(listingId, reason);
 }
 
-export function dbSimulatePayout(input: {
+export async function dbSimulatePayout(input: {
   listingId: string;
   definedNet: number;
   periodLabel?: string;
 }) {
-  const result = simulatePayout(readDb(), input);
-  if (result.payout) writeDb(result.store);
-  return result;
+  if (getBackendMode() === "supabase") return remote.sbSimulatePayout(input);
+  return local.dbSimulatePayout(input);
 }
 
-export function dbArtistListings(artistId: string | null) {
-  const store = readDb();
-  if (artistId) {
-    return store.listings.filter((l) => l.artistId === artistId);
-  }
-  return store.listings.filter((l) => l.id === "listing_mira_vale");
+export async function dbArtistListings(artistId: string | null) {
+  if (getBackendMode() === "supabase") return remote.sbArtistListings(artistId);
+  return local.dbArtistListings(artistId);
 }
 
-export function dbSetCurrentArtist(artistId: string | null) {
-  const store = readDb();
-  return writeDb({ ...store, currentArtistId: artistId });
+export async function dbSetCurrentArtist(artistId: string | null) {
+  // Session binding stays local for prototype simplicity
+  return local.dbSetCurrentArtist(artistId);
 }
 
-export function dbSetCurrentFan(email: string | null) {
-  const store = readDb();
-  return writeDb({ ...store, currentFanEmail: email });
+export async function dbSetCurrentFan(email: string | null) {
+  return local.dbSetCurrentFan(email);
 }
 
-export function dbSnapshot() {
-  return readDb();
+export async function dbSnapshot() {
+  if (getBackendMode() === "supabase") return remote.sbSnapshot();
+  return local.dbSnapshot();
 }
+
+// Re-export local read/write for document helpers
+export { readDb, writeDb } from "./db-local";

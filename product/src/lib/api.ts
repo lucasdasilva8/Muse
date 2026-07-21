@@ -1,6 +1,6 @@
 "use client";
 
-import type { Investment, Listing, PayoutCycle } from "./types";
+import type { ArtistDocument, Investment, Listing, PayoutCycle } from "./types";
 import type { PublishArtistInput } from "./domain";
 
 export type PrototypeMeta = {
@@ -139,4 +139,32 @@ export async function apiSetSession(body: {
   return parse<{
     session: { artistId: string | null; fanEmail: string | null };
   }>(res);
+}
+
+export async function apiListDocuments(listingId?: string) {
+  const q = listingId ? `?listingId=${encodeURIComponent(listingId)}` : "";
+  const res = await fetch(`/api/documents${q}`, { cache: "no-store" });
+  return parse<{ documents: ArtistDocument[] }>(res);
+}
+
+export async function apiUploadDocument(input: {
+  listingId: string;
+  category: string;
+  file: File;
+}) {
+  const form = new FormData();
+  form.set("listingId", input.listingId);
+  form.set("category", input.category);
+  form.set("file", input.file);
+  const res = await fetch("/api/documents", { method: "POST", body: form });
+  return parse<{ document: ArtistDocument }>(res);
+}
+
+export async function apiVerifyDocument(id: string, verified: boolean) {
+  const res = await fetch("/api/documents", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, verified }),
+  });
+  return parse<{ document: ArtistDocument }>(res);
 }

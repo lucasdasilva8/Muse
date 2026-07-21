@@ -5,15 +5,15 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const listings = await dbListLive();
   return NextResponse.json({
     ...getPrototypeMeta(),
-    listings: dbListLive(),
+    listings,
   });
 }
 
-/** Reset prototype data to Mira Vale sample — demo only */
 export async function DELETE() {
-  const store = resetDb();
+  const store = await resetDb();
   return NextResponse.json({
     ...getPrototypeMeta(),
     ok: true,

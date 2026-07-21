@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   return NextResponse.json({
     ...getPrototypeMeta(),
-    pending: dbListPending(),
+    pending: await dbListPending(),
     notice: "Prototype admin queue — no real compliance review.",
   });
 }
@@ -43,8 +43,8 @@ export async function POST(req: Request) {
 
   const result =
     action === "approve"
-      ? dbApprove(listingId)
-      : dbReject(listingId, body.reason);
+      ? await dbApprove(listingId)
+      : await dbReject(listingId, body.reason);
 
   if (result.error || !result.listing) {
     return NextResponse.json(
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
   return NextResponse.json({
     ...getPrototypeMeta(),
     listing: result.listing,
-    pending: dbListPending(),
+    pending: await dbListPending(),
     notice: `Prototype ${action} only — not a legal listing decision.`,
   });
 }

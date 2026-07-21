@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
+import { DocumentPanel } from "@/components/DocumentPanel";
 import {
   PricingPanel,
   RaiseProgress,
   RiskBadge,
   VerificationBadge,
 } from "@/components/ListingBits";
+import { readClientSession } from "@/lib/clientSession";
 import { money, pct } from "@/lib/format";
 import { useHasMounted, useListingDetail } from "@/lib/hooks";
 
@@ -17,6 +20,11 @@ export default function ListingPage() {
   const id = String(params.id || "");
   const mounted = useHasMounted();
   const { listing, investments, loading, error } = useListingDetail(id);
+  const [canVerify, setCanVerify] = useState(false);
+
+  useEffect(() => {
+    if (mounted) setCanVerify(readClientSession().role === "admin");
+  }, [mounted]);
 
   if (!mounted || loading) {
     return (
@@ -80,6 +88,8 @@ export default function ListingPage() {
           </div>
 
           <PricingPanel listing={listing} />
+
+          <DocumentPanel listingId={listing.id} canVerify={canVerify} />
 
           <h2 style={{ marginTop: "1.5rem" }}>
             Simulated investors ({investments.length})
@@ -146,7 +156,11 @@ export default function ListingPage() {
             >
               Simulate invest
             </Link>
-            <Link className="btn btn-outline" href="/browse" style={{ width: "100%" }}>
+            <Link
+              className="btn btn-outline"
+              href="/browse"
+              style={{ width: "100%" }}
+            >
               All listings
             </Link>
           </div>

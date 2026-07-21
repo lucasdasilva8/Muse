@@ -10,6 +10,7 @@ import {
   VerificationBadge,
 } from "@/components/ListingBits";
 import { apiListPayouts, apiSimulatePayout } from "@/lib/api";
+import { DocumentPanel } from "@/components/DocumentPanel";
 import { money, pct } from "@/lib/format";
 import { useArtistDashboard, useHasMounted } from "@/lib/hooks";
 import { fanPeriodPayout } from "@/lib/pricing";
@@ -175,6 +176,8 @@ export default function ArtistDashboardPage() {
               ))}
             </tbody>
           </table>
+
+          <DocumentPanel listingId={listing.id} canUpload />
 
           <h2 style={{ marginTop: "1.5rem" }}>Report revenue (simulate payout)</h2>
           <form className="card" onSubmit={onReport}>

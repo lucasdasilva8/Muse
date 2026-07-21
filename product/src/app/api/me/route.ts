@@ -17,24 +17,25 @@ export async function GET(req: Request) {
   if (email) {
     return NextResponse.json({
       ...getPrototypeMeta(),
-      investments: dbGetInvestments(undefined, email),
+      investments: await dbGetInvestments(undefined, email),
     });
   }
 
   if (artistId !== null) {
     const id = artistId === "" || artistId === "sample" ? null : artistId;
-    const listings = dbArtistListings(id);
+    const store = await dbSnapshot();
+    const listings = await dbArtistListings(id);
     const listing = listings[0];
     return NextResponse.json({
       ...getPrototypeMeta(),
-      currentArtistId: dbSnapshot().currentArtistId,
+      currentArtistId: store.currentArtistId,
       listings,
-      investments: listing ? dbGetInvestments(listing.id) : [],
+      investments: listing ? await dbGetInvestments(listing.id) : [],
     });
   }
 
   return NextResponse.json({
     ...getPrototypeMeta(),
-    store: dbSnapshot(),
+    store: await dbSnapshot(),
   });
 }

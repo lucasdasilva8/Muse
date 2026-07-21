@@ -9,9 +9,8 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Prototype “session” — email/role only, not real auth */
 export async function GET() {
-  const store = dbSnapshot();
+  const store = await dbSnapshot();
   return NextResponse.json({
     ...getPrototypeMeta(),
     session: {
@@ -37,8 +36,8 @@ export async function POST(req: Request) {
   }
 
   if (body.role === "clear") {
-    dbSetCurrentArtist(null);
-    dbSetCurrentFan(null);
+    await dbSetCurrentArtist(null);
+    await dbSetCurrentFan(null);
   } else if (body.role === "fan") {
     const email = String(body.email || "").trim();
     if (!email) {
@@ -47,10 +46,9 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    dbSetCurrentFan(email);
+    await dbSetCurrentFan(email);
   } else if (body.role === "artist") {
-    // Bind to last published artist if artistId omitted
-    const store = dbSnapshot();
+    const store = await dbSnapshot();
     const artistId = String(body.artistId || store.currentArtistId || "").trim();
     if (!artistId) {
       return NextResponse.json(
@@ -61,11 +59,11 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    dbSetCurrentArtist(artistId);
-    if (body.email) dbSetCurrentFan(String(body.email).trim());
+    await dbSetCurrentArtist(artistId);
+    if (body.email) await dbSetCurrentFan(String(body.email).trim());
   }
 
-  const store = dbSnapshot();
+  const store = await dbSnapshot();
   return NextResponse.json({
     ...getPrototypeMeta(),
     session: {

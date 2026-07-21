@@ -38,6 +38,7 @@ yarn-error.log*
 
 # prototype local database
 .data/
+uploads/
 
 # vercel
 .vercel
