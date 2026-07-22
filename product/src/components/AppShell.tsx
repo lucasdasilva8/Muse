@@ -14,19 +14,18 @@ const links = [
 export function AppShell({
   children,
   active,
-  fullBleed = false,
+  home = false,
 }: {
   children: ReactNode;
   active?: string;
-  /** Home-style pages that include their own hero / sections */
-  fullBleed?: boolean;
+  home?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="app-root">
+    <>
       <div className="banner">
-        <strong>PROTOTYPE</strong> — simulated product only. No payments or
+        <strong>Prototype</strong> — simulated product only. No payments or
         securities offering.{" "}
         <a href="https://lucasdasilva8.github.io/Muse/" target="_blank" rel="noreferrer">
           Marketing site
@@ -34,7 +33,7 @@ export function AppShell({
       </div>
 
       <nav className="site-nav" aria-label="Primary">
-        <div className="site-nav-inner">
+        <div className="container">
           <Link href="/" className="logo">
             MUSE
           </Link>
@@ -42,12 +41,11 @@ export function AppShell({
             className="nav-toggle"
             type="button"
             aria-expanded={open}
-            aria-controls="nav-menu"
             onClick={() => setOpen((v) => !v)}
           >
             Menu
           </button>
-          <ul className={`nav-links${open ? " is-open" : ""}`} id="nav-menu">
+          <ul className={`nav-links${open ? " is-open" : ""}`}>
             {links.map((l) => (
               <li key={l.href}>
                 <Link
@@ -68,11 +66,7 @@ export function AppShell({
         </div>
       </nav>
 
-      {fullBleed ? (
-        children
-      ) : (
-        <div className="container container-pad">{children}</div>
-      )}
+      {home ? children : <div className="app-main">{children}</div>}
 
       <footer className="site-footer">
         <div className="container">
@@ -94,14 +88,23 @@ export function AppShell({
               <li>
                 <Link href="/session">Session</Link>
               </li>
+              <li>
+                <a
+                  href="https://lucasdasilva8.github.io/Muse/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Marketing site
+                </a>
+              </li>
             </ul>
           </div>
           <p className="footer-meta">
-            Prototype product app — not an offer to sell securities. Music
-            revenue is uncertain.
+            Prototype only. Not an offer to sell securities. Music revenue is
+            uncertain — you can lose money.
           </p>
         </div>
       </footer>
-    </div>
+    </>
   );
 }

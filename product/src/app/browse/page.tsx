@@ -7,23 +7,23 @@ import {
   RiskBadge,
   VerificationBadge,
 } from "@/components/ListingBits";
-import { apiResetPrototype } from "@/lib/api";
 import { money, pct } from "@/lib/format";
 import { useHasMounted, useLiveListings } from "@/lib/hooks";
+import { apiResetPrototype } from "@/lib/api";
 
 export default function BrowsePage() {
   const mounted = useHasMounted();
   const { listings, loading, error, refresh } = useLiveListings();
 
   return (
-    <AppShell active="/browse" fullBleed>
+    <AppShell active="/browse" home>
       <header className="hero hero-compact">
         <div className="hero-atmosphere" aria-hidden="true" />
         <div className="container">
           <p className="eyebrow" style={{ color: "#7dbeb2" }}>
             Fan · browse · prototype
           </p>
-          <h1 style={{ maxWidth: "14ch" }}>Live offers</h1>
+          <h1>Live offers</h1>
           <p className="hero-lead">
             Simulated listings from the prototype API. Commitments are fake —
             nothing is sold or charged.
@@ -31,7 +31,7 @@ export default function BrowsePage() {
         </div>
       </header>
 
-      <div className="container container-pad">
+      <div className="app-main">
         {!mounted || loading ? (
           <p className="muted">Loading prototype store…</p>
         ) : error ? (
