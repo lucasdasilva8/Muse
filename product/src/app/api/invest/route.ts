@@ -38,6 +38,6 @@ export async function POST(req: Request) {
     ...getPrototypeMeta(),
     investment: result.investment,
     notice:
-      "Prototype commitment only — no card was charged, no securities were sold.",
+      "Prototype commitment held in simulated Muse escrow — no card charged, no securities sold.",
   });
 }

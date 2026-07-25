@@ -13,12 +13,23 @@ export async function GET() {
 }
 
 export async function DELETE() {
-  const store = await resetDb();
-  return NextResponse.json({
-    ...getPrototypeMeta(),
-    ok: true,
-    listings: store.listings.filter(
-      (l) => l.status === "live" || l.status === "funded"
-    ),
-  });
+  try {
+    const store = await resetDb();
+    return NextResponse.json({
+      ...getPrototypeMeta(),
+      ok: true,
+      listings: store.listings.filter(
+        (l) => l.status === "live" || l.status === "funded"
+      ),
+    });
+  } catch (e) {
+    return NextResponse.json(
+      {
+        ...getPrototypeMeta(),
+        ok: false,
+        error: e instanceof Error ? e.message : "Reset failed",
+      },
+      { status: 503 }
+    );
+  }
 }

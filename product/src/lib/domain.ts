@@ -1,12 +1,13 @@
 /**
  * Pure domain mutations — used by the prototype server DB.
- * Not a production ledger. No payments, no auth, no escrow.
+ * Simulated fiat escrow only. No real payments, bank rails, or blockchain.
  */
 
-import { computePricing, fanFraction } from "./pricing";
+import { computePricing, fanFraction, POLICY } from "./pricing";
 import { createId, nowIso } from "./format";
 import type {
   ArtistProfile,
+  EscrowEvent,
   IncomeCategory,
   Investment,
   Listing,
@@ -17,6 +18,56 @@ import type {
   TractionInputs,
   VerificationLevel,
 } from "./types";
+
+function pushEscrowEvent(
+  events: EscrowEvent[],
+  partial: Omit<EscrowEvent, "id" | "createdAt">
+): EscrowEvent[] {
+  return [
+    {
+      id: createId("escrow"),
+      createdAt: nowIso(),
+      ...partial,
+    },
+    ...events,
+  ];
+}
+
+/** Backfill escrow fields for older local JSON / incomplete rows */
+export function normalizeListing(listing: Listing): Listing {
+  const raised = Number(listing.raisedAmount) || 0;
+  const escrowBalance =
+    listing.escrowBalance !== undefined
+      ? Number(listing.escrowBalance)
+      : listing.escrowStatus === "released"
+        ? 0
+        : raised;
+  return {
+    ...listing,
+    escrowStatus: listing.escrowStatus ?? (raised > 0 ? "collecting" : "collecting"),
+    escrowBalance,
+    artistReleasedAmount: Number(listing.artistReleasedAmount) || 0,
+    platformFeeCollected: Number(listing.platformFeeCollected) || 0,
+  };
+}
+
+export function normalizeInvestment(inv: Investment): Investment {
+  return {
+    ...inv,
+    custody: inv.custody ?? "in_escrow",
+  };
+}
+
+export function normalizeStore(store: MuseStore): MuseStore {
+  return {
+    ...store,
+    payouts: store.payouts ?? [],
+    documents: store.documents ?? [],
+    escrowEvents: store.escrowEvents ?? [],
+    listings: (store.listings ?? []).map(normalizeListing),
+    investments: (store.investments ?? []).map(normalizeInvestment),
+  };
+}
 
 export interface PublishArtistInput {
   stageName: string;
@@ -92,8 +143,11 @@ export function publishArtistListing(
     pricing,
     raisedAmount: 0,
     autoApproved: live,
+    escrowStatus: "collecting",
+    escrowBalance: 0,
+    artistReleasedAmount: 0,
+    platformFeeCollected: 0,
   };
-
   return {
     listing,
     store: {
@@ -141,16 +195,44 @@ export function investInListing(
     fanEmail: input.fanEmail.trim(),
     amount,
     fanFraction: fanFraction(amount, listing.terms.R),
-    /** Prototype: marked committed, but no payment was taken */
+    /** Prototype: committed + held in simulated escrow (no card charge) */
     status: "committed",
+    custody: "in_escrow",
   };
 
   const raisedAmount = listing.raisedAmount + amount;
-  const status = raisedAmount >= listing.terms.R ? ("funded" as const) : ("live" as const);
+  const funded = raisedAmount >= listing.terms.R;
+  const status = funded ? ("funded" as const) : ("live" as const);
+  const escrowBalance = listing.escrowBalance + amount;
+  const escrowStatus = funded ? ("holding" as const) : ("collecting" as const);
+
+  let escrowEvents = pushEscrowEvent(store.escrowEvents ?? [], {
+    listingId: listing.id,
+    type: "deposit",
+    amount,
+    note: `Simulated fan deposit into Muse escrow (${investment.fanEmail}).`,
+  });
+
+  if (funded && listing.escrowStatus !== "holding") {
+    escrowEvents = pushEscrowEvent(escrowEvents, {
+      listingId: listing.id,
+      type: "raise_closed",
+      amount: escrowBalance,
+      note: "Raise target met — funds remain in escrow until release to artist.",
+    });
+  }
 
   const listings = store.listings.map((l) =>
     l.id === listing.id
-      ? { ...l, raisedAmount, status, updatedAt: nowIso() }
+      ? {
+          ...l,
+          raisedAmount,
+          status,
+          escrowBalance,
+          escrowStatus,
+          raiseClosedAt: funded ? l.raiseClosedAt || nowIso() : l.raiseClosedAt,
+          updatedAt: nowIso(),
+        }
       : l
   );
 
@@ -160,7 +242,111 @@ export function investInListing(
       ...store,
       listings,
       investments: [investment, ...store.investments],
+      escrowEvents,
       currentFanEmail: investment.fanEmail,
+    },
+  };
+}
+
+/** Close an open raise early (or confirm funded) — funds stay in escrow. */
+export function closeRaise(
+  store: MuseStore,
+  listingId: string
+): { store: MuseStore; listing?: Listing; error?: string } {
+  const listing = store.listings.find((l) => l.id === listingId);
+  if (!listing) return { store, error: "Listing not found." };
+  if (listing.escrowStatus === "released" || listing.escrowStatus === "refunded") {
+    return { store, error: "Escrow already settled for this listing." };
+  }
+  if (listing.escrowBalance <= 0) {
+    return { store, error: "No funds in escrow to close against." };
+  }
+  if (listing.escrowStatus === "holding") {
+    return { store, listing };
+  }
+
+  const next: Listing = {
+    ...listing,
+    status: "funded",
+    escrowStatus: "holding",
+    raiseClosedAt: listing.raiseClosedAt || nowIso(),
+    updatedAt: nowIso(),
+  };
+
+  return {
+    listing: next,
+    store: {
+      ...store,
+      listings: store.listings.map((l) => (l.id === listingId ? next : l)),
+      escrowEvents: pushEscrowEvent(store.escrowEvents ?? [], {
+        listingId,
+        type: "raise_closed",
+        amount: next.escrowBalance,
+        note: "Raise closed — simulated funds remain segregated in platform escrow.",
+      }),
+    },
+  };
+}
+
+/**
+ * Release net raise to artist after platform fee.
+ * Muse never treats escrow as operating cash — fee is recorded separately.
+ */
+export function releaseEscrowToArtist(
+  store: MuseStore,
+  listingId: string
+): { store: MuseStore; listing?: Listing; error?: string } {
+  const listing = store.listings.find((l) => l.id === listingId);
+  if (!listing) return { store, error: "Listing not found." };
+  if (listing.escrowStatus === "released") {
+    return { store, error: "Escrow already released to artist." };
+  }
+  if (listing.escrowBalance <= 0) {
+    return { store, error: "Nothing in escrow to release." };
+  }
+
+  const gross = listing.escrowBalance;
+  const fee = Math.round(gross * POLICY.raiseFeeRate * 100) / 100;
+  const net = Math.round((gross - fee) * 100) / 100;
+
+  const next: Listing = {
+    ...listing,
+    status: listing.status === "live" ? "funded" : listing.status,
+    escrowStatus: "released",
+    escrowBalance: 0,
+    artistReleasedAmount: listing.artistReleasedAmount + net,
+    platformFeeCollected: listing.platformFeeCollected + fee,
+    raiseClosedAt: listing.raiseClosedAt || nowIso(),
+    escrowReleasedAt: nowIso(),
+    updatedAt: nowIso(),
+  };
+
+  const investments = store.investments.map((inv) =>
+    inv.listingId === listingId && inv.custody === "in_escrow"
+      ? { ...inv, custody: "released_to_artist" as const }
+      : inv
+  );
+
+  let escrowEvents = pushEscrowEvent(store.escrowEvents ?? [], {
+    listingId,
+    type: "platform_fee",
+    amount: fee,
+    note: `Simulated Muse raise fee (${(POLICY.raiseFeeRate * 100).toFixed(0)}%). Not operating cash from fan principal beyond fee.`,
+  });
+  escrowEvents = pushEscrowEvent(escrowEvents, {
+    listingId,
+    type: "release_to_artist",
+    amount: net,
+    note: `Simulated disbursement of net raise to artist (${listing.profile.stageName}).`,
+  });
+
+  return {
+    listing: next,
+    store: {
+      ...store,
+      listings: store.listings.map((l) => (l.id === listingId ? next : l)),
+      investments,
+      escrowEvents,
     },
   };
 }

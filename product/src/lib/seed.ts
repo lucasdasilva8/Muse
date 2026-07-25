@@ -32,6 +32,7 @@ export function createMiraValeListing(): Listing {
 
   const terms = { R: 8000, S: 0.15, T: 36, C: 1.5 };
   const pricing = computePricing(revenue, traction, terms);
+  const raisedAmount = 3200;
 
   return {
     id: "listing_mira_vale",
@@ -44,39 +45,72 @@ export function createMiraValeListing(): Listing {
     revenue,
     terms,
     pricing,
-    raisedAmount: 3200,
+    raisedAmount,
     autoApproved: true,
+    escrowStatus: "collecting",
+    escrowBalance: raisedAmount,
+    artistReleasedAmount: 0,
+    platformFeeCollected: 0,
   };
 }
 
 export function emptyStore(): MuseStore {
+  const listing = createMiraValeListing();
+  const invAlex = {
+    id: createId("inv"),
+    listingId: "listing_mira_vale",
+    createdAt: nowIso(),
+    fanName: "Alex R.",
+    fanEmail: "alex@example.com",
+    amount: 250,
+    fanFraction: 250 / 8000,
+    status: "committed" as const,
+    custody: "in_escrow" as const,
+  };
+  const invJordan = {
+    id: createId("inv"),
+    listingId: "listing_mira_vale",
+    createdAt: nowIso(),
+    fanName: "Jordan K.",
+    fanEmail: "jordan@example.com",
+    amount: 100,
+    fanFraction: 100 / 8000,
+    status: "committed" as const,
+    custody: "in_escrow" as const,
+  };
+
   return {
     version: 1,
-    listings: [createMiraValeListing()],
-    investments: [
-      {
-        id: createId("inv"),
-        listingId: "listing_mira_vale",
-        createdAt: nowIso(),
-        fanName: "Alex R.",
-        fanEmail: "alex@example.com",
-        amount: 250,
-        fanFraction: 250 / 8000,
-        status: "committed",
-      },
-      {
-        id: createId("inv"),
-        listingId: "listing_mira_vale",
-        createdAt: nowIso(),
-        fanName: "Jordan K.",
-        fanEmail: "jordan@example.com",
-        amount: 100,
-        fanFraction: 100 / 8000,
-        status: "committed",
-      },
-    ],
+    listings: [listing],
+    investments: [invAlex, invJordan],
     payouts: [],
     documents: [],
+    escrowEvents: [
+      {
+        id: createId("escrow"),
+        listingId: listing.id,
+        createdAt: nowIso(),
+        type: "deposit",
+        amount: 250,
+        note: "Seed: Alex R. simulated deposit into Muse escrow.",
+      },
+      {
+        id: createId("escrow"),
+        listingId: listing.id,
+        createdAt: nowIso(),
+        type: "deposit",
+        amount: 100,
+        note: "Seed: Jordan K. simulated deposit into Muse escrow.",
+      },
+      {
+        id: createId("escrow"),
+        listingId: listing.id,
+        createdAt: nowIso(),
+        type: "note",
+        amount: listing.escrowBalance,
+        note: "Seed raise shows $3,200 raised; remaining seed balance is illustrative escrow float.",
+      },
+    ],
     currentArtistId: null,
     currentFanEmail: null,
   };

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { DocumentPanel } from "@/components/DocumentPanel";
+import { EscrowPanel } from "@/components/EscrowPanel";
 import {
   PricingPanel,
   RaiseProgress,
@@ -19,11 +20,15 @@ export default function ListingPage() {
   const params = useParams();
   const id = String(params.id || "");
   const mounted = useHasMounted();
-  const { listing, investments, loading, error } = useListingDetail(id);
+  const { listing, investments, loading, error, refresh } = useListingDetail(id);
   const [canVerify, setCanVerify] = useState(false);
+  const [canActEscrow, setCanActEscrow] = useState(false);
 
   useEffect(() => {
-    if (mounted) setCanVerify(readClientSession().role === "admin");
+    if (!mounted) return;
+    const role = readClientSession().role;
+    setCanVerify(role === "admin");
+    setCanActEscrow(role === "admin" || role === "artist");
   }, [mounted]);
 
   if (!mounted || loading) {
@@ -61,7 +66,7 @@ export default function ListingPage() {
 
       <div className="callout">
         Prototype page loaded from <code>/api/listings/{listing.id}</code>.
-        Investing only records a simulated commitment.
+        Commitments are held in simulated fiat escrow — not a live payment.
       </div>
 
       <div className="grid-2" style={{ marginTop: "1.5rem" }}>
@@ -100,6 +105,7 @@ export default function ListingPage() {
                 <th>Fan</th>
                 <th>Amount</th>
                 <th>Pool %</th>
+                <th>Custody</th>
               </tr>
             </thead>
             <tbody>
@@ -108,15 +114,24 @@ export default function ListingPage() {
                   <td>{i.fanName}</td>
                   <td>{money(i.amount)}</td>
                   <td>{pct(i.fanFraction, 2)}</td>
+                  <td>
+                    <span className="badge badge-mid">{i.custody}</span>
+                  </td>
                 </tr>
               ))}
               {investments.length === 0 && (
                 <tr>
-                  <td colSpan={3}>No commitments yet.</td>
+                  <td colSpan={4}>No commitments yet.</td>
                 </tr>
               )}
             </tbody>
           </table>
+
+          <EscrowPanel
+            listing={listing}
+            canAct={canActEscrow}
+            onUpdated={refresh}
+          />
         </div>
 
         <aside className="card">

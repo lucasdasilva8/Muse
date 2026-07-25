@@ -1,16 +1,19 @@
 "use client";
 
-import type { ArtistDocument, Investment, Listing, PayoutCycle } from "./types";
+import type { ArtistDocument, EscrowEvent, Investment, Listing, PayoutCycle } from "./types";
 import type { PublishArtistInput } from "./domain";
 
 export type PrototypeMeta = {
   prototype: true;
+  experimental?: boolean;
   mode: string;
   persistence: string;
   payments: boolean;
   auth: boolean;
-  escrow: boolean;
+  escrow: boolean | "simulated";
   legalOffering: boolean;
+  hosted?: boolean;
+  needsSupabaseSetup?: boolean;
   message: string;
   notice?: string;
   error?: string;
@@ -117,6 +120,27 @@ export async function apiListPayouts(listingId?: string) {
   const q = listingId ? `?listingId=${encodeURIComponent(listingId)}` : "";
   const res = await fetch(`/api/payouts${q}`, { cache: "no-store" });
   return parse<{ payouts: PayoutCycle[] }>(res);
+}
+
+export async function apiListEscrowEvents(listingId?: string) {
+  const q = listingId ? `?listingId=${encodeURIComponent(listingId)}` : "";
+  const res = await fetch(`/api/escrow${q}`, { cache: "no-store" });
+  return parse<{ events: EscrowEvent[] }>(res);
+}
+
+export async function apiEscrowAction(
+  listingId: string,
+  action: "close_raise" | "release_to_artist"
+) {
+  const res = await fetch("/api/escrow", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ listingId, action }),
+  });
+  return parse<{
+    listing: Listing;
+    events: EscrowEvent[];
+  }>(res);
 }
 
 export async function apiGetSession() {

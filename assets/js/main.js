@@ -3,6 +3,13 @@
   const WAITLIST_EMAIL = "lucas_da_silva@brown.edu";
 
   /**
+   * After Vercel deploy of product/, paste the public app URL here
+   * (e.g. https://muse-xxxx.vercel.app). Leave empty to keep static prototype links.
+   * See docs/DEPLOY_EXPERIMENTAL.md
+   */
+  const PRODUCT_APP_URL = "";
+
+  /**
    * After you deploy docs/google-apps-script/MuseWaitlist.gs as a Web app,
    * paste the deployment URL here (ends with /exec).
    * Leave empty to fall back to mailto only.
@@ -226,5 +233,16 @@
           if (btn) btn.disabled = false;
         });
     });
+  });
+
+  // Experimental product app links (set PRODUCT_APP_URL after Vercel deploy)
+  document.querySelectorAll("[data-product-app]").forEach(function (el) {
+    var path = el.getAttribute("data-product-app") || "/browse";
+    if (PRODUCT_APP_URL) {
+      el.setAttribute("href", PRODUCT_APP_URL.replace(/\/$/, "") + path);
+      el.removeAttribute("data-product-fallback");
+    } else if (el.getAttribute("data-product-fallback")) {
+      el.setAttribute("href", el.getAttribute("data-product-fallback"));
+    }
   });
 })();

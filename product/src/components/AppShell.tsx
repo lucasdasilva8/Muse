@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
+import { HostedSetupBanner } from "@/components/HostedSetupBanner";
 
 const links = [
   { href: "/browse", label: "Browse" },
@@ -25,8 +26,8 @@ export function AppShell({
   return (
     <>
       <div className="banner">
-        <strong>Prototype</strong> — simulated product only. No payments or
-        securities offering.{" "}
+        <strong>Experimental prototype</strong> — simulated only. No payments,
+        custody, or securities offering.{" "}
         <a href="https://lucasdasilva8.github.io/Muse/" target="_blank" rel="noreferrer">
           Marketing site
         </a>
@@ -66,7 +67,19 @@ export function AppShell({
         </div>
       </nav>
 
-      {home ? children : <div className="app-main">{children}</div>}
+      {home ? (
+        <>
+          <div className="container" style={{ paddingTop: "1rem" }}>
+            <HostedSetupBanner />
+          </div>
+          {children}
+        </>
+      ) : (
+        <div className="app-main">
+          <HostedSetupBanner />
+          {children}
+        </div>
+      )}
 
       <footer className="site-footer">
         <div className="container">

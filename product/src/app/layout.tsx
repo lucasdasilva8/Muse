@@ -13,9 +13,13 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "Muse — Product backbone",
+  title: "Muse — Experimental product",
   description:
-    "Artist listing and fan investment backbone for Muse (local prototype).",
+    "Experimental Muse product prototype. Simulated listings, escrow, and payouts only — not a live securities offering.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({

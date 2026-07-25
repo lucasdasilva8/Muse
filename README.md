@@ -65,4 +65,8 @@ cd product && npm install && npm run dev
 - Fan browse/invest: http://localhost:3000/browse  
 - Docs: [docs/BACKBONE.md](docs/BACKBONE.md)
 
+### Experimental public deploy
+
+To put the product app on the web (Vercel + Supabase): see **[docs/DEPLOY_EXPERIMENTAL.md](docs/DEPLOY_EXPERIMENTAL.md)**.
+
 Static marketing + clickable HTML prototype remain on GitHub Pages.

@@ -91,8 +91,8 @@ export default function InvestPage() {
       <p className="eyebrow">Invest · prototype</p>
       <h1>Simulate backing {listing.profile.stageName}</h1>
       <p className="lead">
-        Submits to <code>/api/invest</code>. Records a fake commitment in the
-        prototype store. <strong>No card is charged.</strong>
+        Submits to <code>/api/invest</code>. Records a fake commitment held in
+        simulated Muse escrow. <strong>No card is charged.</strong>
       </p>
 
       <div className="grid-2">

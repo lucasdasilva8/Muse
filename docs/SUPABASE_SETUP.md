@@ -1,6 +1,8 @@
 # Supabase setup (optional)
 
-The product app runs on **local JSON** by default. To use Supabase:
+The product app runs on **local JSON** by default. **Hosted / experimental web deploys require Supabase** (see [DEPLOY_EXPERIMENTAL.md](DEPLOY_EXPERIMENTAL.md)).
+
+To use Supabase locally or on Vercel:
 
 1. Create a project at [supabase.com](https://supabase.com)
 2. SQL editor → paste and run `product/supabase/schema.sql`

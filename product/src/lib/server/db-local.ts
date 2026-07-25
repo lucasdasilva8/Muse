@@ -6,14 +6,17 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import {
   approveListing,
+  closeRaise,
   investInListing,
+  normalizeStore,
   publishArtistListing,
   rejectListing,
+  releaseEscrowToArtist,
   simulatePayout,
   type PublishArtistInput,
 } from "../domain";
 import { emptyStore } from "../seed";
-import type { MuseStore } from "../types";
+import type { EscrowEvent, MuseStore } from "../types";
 
 const DATA_DIR = path.join(process.cwd(), ".data");
 const DATA_FILE = path.join(DATA_DIR, "muse.json");
@@ -26,14 +29,6 @@ function ensureDir() {
   if (!existsSync(DATA_DIR)) {
     mkdirSync(DATA_DIR, { recursive: true });
   }
-}
-
-function normalizeStore(store: MuseStore): MuseStore {
-  return {
-    ...store,
-    payouts: store.payouts ?? [],
-    documents: store.documents ?? [],
-  };
 }
 
 export function readDb(): MuseStore {
@@ -141,6 +136,24 @@ export function dbSimulatePayout(input: {
   const result = simulatePayout(readDb(), input);
   if (result.payout) writeDb(result.store);
   return result;
+}
+
+export function dbCloseRaise(listingId: string) {
+  const result = closeRaise(readDb(), listingId);
+  if (result.listing && !result.error) writeDb(result.store);
+  return result;
+}
+
+export function dbReleaseEscrow(listingId: string) {
+  const result = releaseEscrowToArtist(readDb(), listingId);
+  if (result.listing && !result.error) writeDb(result.store);
+  return result;
+}
+
+export function dbGetEscrowEvents(listingId?: string): EscrowEvent[] {
+  const rows = readDb().escrowEvents ?? [];
+  if (!listingId) return rows;
+  return rows.filter((e) => e.listingId === listingId);
 }
 
 export function dbArtistListings(artistId: string | null) {

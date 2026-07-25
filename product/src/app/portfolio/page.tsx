@@ -87,7 +87,7 @@ export default function PortfolioPage() {
               <th>Artist</th>
               <th>Amount</th>
               <th>Pool %</th>
-              <th>Status</th>
+              <th>Custody</th>
               <th></th>
             </tr>
           </thead>
@@ -97,7 +97,11 @@ export default function PortfolioPage() {
                 <td>{names[inv.listingId] || "…"}</td>
                 <td>{money(inv.amount)}</td>
                 <td>{pct(inv.fanFraction, 2)}</td>
-                <td>{inv.status} (sim)</td>
+                <td>
+                  <span className="badge badge-mid">
+                    {inv.custody || "in_escrow"}
+                  </span>
+                </td>
                 <td>
                   <Link href={`/listing/${inv.listingId}`}>Open</Link>
                 </td>

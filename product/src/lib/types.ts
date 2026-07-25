@@ -11,6 +11,21 @@ export type OfferStatus =
   | "funded"
   | "closed";
 
+/**
+ * Simulated fiat escrow — platform holds fan funds until release rules fire.
+ * Not blockchain; not real money movement.
+ */
+export type EscrowStatus =
+  | "collecting" // raise open, funds accumulating in escrow
+  | "holding" // raise closed/funded, still in platform escrow
+  | "released" // net raise sent to artist (sim)
+  | "refunded"; // prototype refund path
+
+export type CustodyStatus =
+  | "in_escrow"
+  | "released_to_artist"
+  | "refunded";
+
 export type RiskLabel = "higher" | "medium" | "lower";
 
 export interface ArtistProfile {
@@ -71,6 +86,16 @@ export interface Listing {
   raisedAmount: number;
   /** Auto-approve in local backbone for demos */
   autoApproved: boolean;
+  /** Escrow (simulated fiat custody) */
+  escrowStatus: EscrowStatus;
+  /** Fan funds currently held by Muse prototype escrow */
+  escrowBalance: number;
+  /** Net amount marked released to artist */
+  artistReleasedAmount: number;
+  /** Platform raise fee taken at release */
+  platformFeeCollected: number;
+  raiseClosedAt?: string;
+  escrowReleasedAt?: string;
 }
 
 export interface Investment {
@@ -83,6 +108,23 @@ export interface Investment {
   /** amount / R at time of invest */
   fanFraction: number;
   status: "interest" | "committed";
+  /** Where this commitment sits in the escrow flow */
+  custody: CustodyStatus;
+}
+
+/** Audit trail for simulated escrow movements */
+export interface EscrowEvent {
+  id: string;
+  listingId: string;
+  createdAt: string;
+  type:
+    | "deposit"
+    | "raise_closed"
+    | "release_to_artist"
+    | "platform_fee"
+    | "note";
+  amount: number;
+  note: string;
 }
 
 /** Simulated payout period — no real money moves */
@@ -132,6 +174,7 @@ export interface MuseStore {
   investments: Investment[];
   payouts: PayoutCycle[];
   documents: ArtistDocument[];
+  escrowEvents: EscrowEvent[];
   currentArtistId: string | null;
   currentFanEmail: string | null;
 }

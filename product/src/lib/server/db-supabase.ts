@@ -6,9 +6,13 @@
 
 import {
   approveListing,
+  closeRaise,
   investInListing,
+  normalizeInvestment,
+  normalizeListing,
   publishArtistListing,
   rejectListing,
+  releaseEscrowToArtist,
   simulatePayout,
   type PublishArtistInput,
 } from "../domain";
@@ -17,6 +21,8 @@ import { getSupabaseAdmin } from "../supabase/client";
 import type {
   ArtistDocument,
   ArtistProfile,
+  EscrowEvent,
+  EscrowStatus,
   Investment,
   Listing,
   MuseStore,
@@ -43,6 +49,12 @@ type ListingRow = {
   raised_amount: number;
   auto_approved: boolean;
   profile: ArtistProfile;
+  escrow_status?: EscrowStatus;
+  escrow_balance?: number;
+  artist_released_amount?: number;
+  platform_fee_collected?: number;
+  raise_closed_at?: string | null;
+  escrow_released_at?: string | null;
 };
 
 function sb() {
@@ -52,7 +64,7 @@ function sb() {
 }
 
 function rowToListing(row: ListingRow): Listing {
-  return {
+  return normalizeListing({
     id: row.id,
     artistId: row.artist_id,
     createdAt: row.created_at,
@@ -70,7 +82,16 @@ function rowToListing(row: ListingRow): Listing {
     pricing: row.pricing,
     raisedAmount: Number(row.raised_amount),
     autoApproved: row.auto_approved,
-  };
+    escrowStatus: row.escrow_status ?? "collecting",
+    escrowBalance:
+      row.escrow_balance !== undefined
+        ? Number(row.escrow_balance)
+        : Number(row.raised_amount),
+    artistReleasedAmount: Number(row.artist_released_amount) || 0,
+    platformFeeCollected: Number(row.platform_fee_collected) || 0,
+    raiseClosedAt: row.raise_closed_at || undefined,
+    escrowReleasedAt: row.escrow_released_at || undefined,
+  });
 }
 
 function listingToRow(listing: Listing) {
@@ -90,6 +111,12 @@ function listingToRow(listing: Listing) {
     raised_amount: listing.raisedAmount,
     auto_approved: listing.autoApproved,
     profile: listing.profile,
+    escrow_status: listing.escrowStatus,
+    escrow_balance: listing.escrowBalance,
+    artist_released_amount: listing.artistReleasedAmount,
+    platform_fee_collected: listing.platformFeeCollected,
+    raise_closed_at: listing.raiseClosedAt ?? null,
+    escrow_released_at: listing.escrowReleasedAt ?? null,
     prototype: true,
   };
 }
@@ -103,16 +130,19 @@ async function loadAllListings(): Promise<Listing[]> {
 async function loadInvestments(): Promise<Investment[]> {
   const { data, error } = await sb().from("investments").select("*");
   if (error) throw new Error(error.message);
-  return (data || []).map((row) => ({
-    id: row.id as string,
-    listingId: row.listing_id as string,
-    createdAt: row.created_at as string,
-    fanName: (row.fan_name as string) || "Fan",
-    fanEmail: row.fan_email as string,
-    amount: Number(row.amount),
-    fanFraction: Number(row.fan_fraction),
-    status: row.status as Investment["status"],
-  }));
+  return (data || []).map((row) =>
+    normalizeInvestment({
+      id: row.id as string,
+      listingId: row.listing_id as string,
+      createdAt: row.created_at as string,
+      fanName: (row.fan_name as string) || "Fan",
+      fanEmail: row.fan_email as string,
+      amount: Number(row.amount),
+      fanFraction: Number(row.fan_fraction),
+      status: row.status as Investment["status"],
+      custody: (row.custody as Investment["custody"]) || "in_escrow",
+    })
+  );
 }
 
 async function loadPayouts(): Promise<PayoutCycle[]> {
@@ -148,19 +178,39 @@ async function loadDocuments(): Promise<ArtistDocument[]> {
   }));
 }
 
+async function loadEscrowEvents(): Promise<EscrowEvent[]> {
+  const { data, error } = await sb().from("escrow_events").select("*");
+  if (error) {
+    // Table may not exist yet on older prototypes
+    if (error.message.toLowerCase().includes("escrow_events")) return [];
+    throw new Error(error.message);
+  }
+  return (data || []).map((row) => ({
+    id: row.id as string,
+    listingId: row.listing_id as string,
+    createdAt: row.created_at as string,
+    type: row.type as EscrowEvent["type"],
+    amount: Number(row.amount),
+    note: (row.note as string) || "",
+  }));
+}
+
 async function snapshot(): Promise<MuseStore> {
-  const [listings, investments, payouts, documents] = await Promise.all([
-    loadAllListings(),
-    loadInvestments(),
-    loadPayouts(),
-    loadDocuments(),
-  ]);
+  const [listings, investments, payouts, documents, escrowEvents] =
+    await Promise.all([
+      loadAllListings(),
+      loadInvestments(),
+      loadPayouts(),
+      loadDocuments(),
+      loadEscrowEvents(),
+    ]);
   return {
     version: 1,
     listings,
     investments,
     payouts,
     documents,
+    escrowEvents,
     currentArtistId: null,
     currentFanEmail: null,
   };
@@ -197,9 +247,28 @@ async function upsertInvestment(inv: Investment) {
     amount: inv.amount,
     fan_fraction: inv.fanFraction,
     status: inv.status,
+    custody: inv.custody,
     payment_processed: false,
   });
   if (error) throw new Error(error.message);
+}
+
+async function upsertEscrowEvents(events: EscrowEvent[], listingId: string) {
+  const rows = events
+    .filter((e) => e.listingId === listingId)
+    .map((e) => ({
+      id: e.id,
+      listing_id: e.listingId,
+      created_at: e.createdAt,
+      type: e.type,
+      amount: e.amount,
+      note: e.note,
+    }));
+  if (!rows.length) return;
+  const { error } = await sb().from("escrow_events").upsert(rows);
+  if (error && !error.message.toLowerCase().includes("escrow_events")) {
+    throw new Error(error.message);
+  }
 }
 
 async function upsertPayout(p: PayoutCycle) {
@@ -219,6 +288,7 @@ async function upsertPayout(p: PayoutCycle) {
 export async function sbResetDb(): Promise<MuseStore> {
   // Soft reset: wipe tables and reseed Mira Vale via domain empty store
   const client = sb();
+  await client.from("escrow_events").delete().neq("id", "");
   await client.from("documents").delete().neq("id", "");
   await client.from("payouts").delete().neq("id", "");
   await client.from("investments").delete().neq("id", "");
@@ -232,6 +302,7 @@ export async function sbResetDb(): Promise<MuseStore> {
   for (const inv of seed.investments) {
     await upsertInvestment(inv);
   }
+  await upsertEscrowEvents(seed.escrowEvents, "listing_mira_vale");
   return seed;
 }
 
@@ -260,16 +331,19 @@ export async function sbGetInvestments(listingId?: string, email?: string) {
   if (listingId) q = q.eq("listing_id", listingId);
   const { data, error } = await q;
   if (error) throw new Error(error.message);
-  let rows = (data || []).map((row) => ({
-    id: row.id as string,
-    listingId: row.listing_id as string,
-    createdAt: row.created_at as string,
-    fanName: (row.fan_name as string) || "Fan",
-    fanEmail: row.fan_email as string,
-    amount: Number(row.amount),
-    fanFraction: Number(row.fan_fraction),
-    status: row.status as Investment["status"],
-  }));
+  let rows = (data || []).map((row) =>
+    normalizeInvestment({
+      id: row.id as string,
+      listingId: row.listing_id as string,
+      createdAt: row.created_at as string,
+      fanName: (row.fan_name as string) || "Fan",
+      fanEmail: row.fan_email as string,
+      amount: Number(row.amount),
+      fanFraction: Number(row.fan_fraction),
+      status: row.status as Investment["status"],
+      custody: (row.custody as Investment["custody"]) || "in_escrow",
+    })
+  );
   if (email) {
     const e = email.trim().toLowerCase();
     rows = rows.filter((i) => i.fanEmail.toLowerCase() === e);
@@ -314,7 +388,37 @@ export async function sbInvest(input: {
   const listing = result.store.listings.find((l) => l.id === input.listingId);
   if (listing) await upsertListing(listing);
   await upsertInvestment(result.investment);
+  await upsertEscrowEvents(result.store.escrowEvents, input.listingId);
   return result;
+}
+
+export async function sbCloseRaise(listingId: string) {
+  const store = await snapshot();
+  const result = closeRaise(store, listingId);
+  if (result.error || !result.listing) return result;
+  await upsertListing(result.listing);
+  await upsertEscrowEvents(result.store.escrowEvents, listingId);
+  return result;
+}
+
+export async function sbReleaseEscrow(listingId: string) {
+  const store = await snapshot();
+  const result = releaseEscrowToArtist(store, listingId);
+  if (result.error || !result.listing) return result;
+  await upsertListing(result.listing);
+  for (const inv of result.store.investments.filter(
+    (i) => i.listingId === listingId
+  )) {
+    await upsertInvestment(inv);
+  }
+  await upsertEscrowEvents(result.store.escrowEvents, listingId);
+  return result;
+}
+
+export async function sbGetEscrowEvents(listingId?: string) {
+  const rows = await loadEscrowEvents();
+  if (!listingId) return rows;
+  return rows.filter((e) => e.listingId === listingId);
 }
 
 export async function sbApprove(listingId: string) {

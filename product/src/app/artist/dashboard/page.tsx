@@ -11,6 +11,7 @@ import {
 } from "@/components/ListingBits";
 import { apiListPayouts, apiSimulatePayout } from "@/lib/api";
 import { DocumentPanel } from "@/components/DocumentPanel";
+import { EscrowPanel } from "@/components/EscrowPanel";
 import { money, pct } from "@/lib/format";
 import { useArtistDashboard, useHasMounted } from "@/lib/hooks";
 import { fanPeriodPayout } from "@/lib/pricing";
@@ -112,8 +113,9 @@ export default function ArtistDashboardPage() {
           <RaiseProgress listing={listing} />
         </div>
         <div className="card stat">
-          <div className="label">Fans in</div>
-          <div className="value">{investments.length}</div>
+          <div className="label">In escrow</div>
+          <div className="value">{money(listing.escrowBalance)}</div>
+          <p className="muted">{listing.escrowStatus}</p>
         </div>
         <div className="card stat">
           <div className="label">TTM defined net</div>
@@ -149,7 +151,7 @@ export default function ArtistDashboardPage() {
               <tr>
                 <th>Fan</th>
                 <th>Amount</th>
-                <th>Pool %</th>
+                <th>Custody</th>
                 <th>If net $2.4k</th>
               </tr>
             </thead>
@@ -161,7 +163,9 @@ export default function ArtistDashboardPage() {
                     <div className="muted">{i.fanEmail}</div>
                   </td>
                   <td>{money(i.amount)}</td>
-                  <td>{pct(i.fanFraction, 2)}</td>
+                  <td>
+                    <span className="badge badge-mid">{i.custody}</span>
+                  </td>
                   <td>
                     {money(
                       fanPeriodPayout(
@@ -176,6 +180,8 @@ export default function ArtistDashboardPage() {
               ))}
             </tbody>
           </table>
+
+          <EscrowPanel listing={listing} canAct onUpdated={refresh} />
 
           <DocumentPanel listingId={listing.id} canUpload />
 
